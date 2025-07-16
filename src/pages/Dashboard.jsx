@@ -23,6 +23,8 @@ const Dashboard = () => {
   const [historicalData, setHistoricalData] = useState([]);
   const [selectedCoin, setSelectedCoin] = useState('bitcoin');
   const [refreshing, setRefreshing] = useState(false);
+  const [usingFallbackData, setUsingFallbackData] = useState(false);
+  const [lastDataUpdate, setLastDataUpdate] = useState(null);
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -43,32 +45,95 @@ const Dashboard = () => {
       setLoading(true);
       setError('');
 
+      console.log('🚀 Loading dashboard data...');
+      
       // Usar el método optimizado para cargar datos del dashboard
       const dashboardData = await coinGeckoService.loadDashboardData();
 
-      setGlobalStats(dashboardData.globalStats.data);
-      setCoins(dashboardData.coins);
-      setTrendingCoins(dashboardData.trending.coins || []);
-      setPieChartData(dashboardData.pieChart);
+      // Verificar si algún dato usa fallback
+      const hasFallbackData = dashboardData.fallbacksUsed && dashboardData.fallbacksUsed.length > 0;
+      setUsingFallbackData(hasFallbackData);
+
+      // Si hay errores pero tenemos datos, mostrar warning pero continuar
+      if (dashboardData.errors && dashboardData.errors.length > 0) {
+        console.warn('⚠️ Some data could not be updated, using available data:', dashboardData.errors);
+        
+        if (hasFallbackData) {
+          setError(`Algunos datos pueden no estar actualizados. Usando información guardada previamente. ${dashboardData.fallbacksUsed.join(', ')} usando datos de respaldo.`);
+        } else {
+          setError('Algunos datos no pudieron cargarse completamente. Mostrando información disponible.');
+        }
+      }
+
+      // Establecer los datos (incluso si son de fallback)
+      if (dashboardData.globalStats) {
+        setGlobalStats(dashboardData.globalStats.data || dashboardData.globalStats);
+      }
+      
+      if (dashboardData.coins && dashboardData.coins.length > 0) {
+        setCoins(dashboardData.coins);
+      }
+      
+      if (dashboardData.trending && dashboardData.trending.coins) {
+        setTrendingCoins(dashboardData.trending.coins);
+      }
+      
+      if (dashboardData.pieChart && dashboardData.pieChart.length > 0) {
+        setPieChartData(dashboardData.pieChart);
+      }
       
       // Procesar datos históricos
-      const processedHistoricalData = dashboardData.historical.prices.map(([timestamp, price]) => ({
-        timestamp,
-        price: price.toFixed(2)
-      }));
-      setHistoricalData(processedHistoricalData);
+      if (dashboardData.historical && dashboardData.historical.prices) {
+        const processedHistoricalData = dashboardData.historical.prices.map(([timestamp, price]) => ({
+          timestamp,
+          price: price.toFixed(2)
+        }));
+        setHistoricalData(processedHistoricalData);
+      }
+
+      setLastDataUpdate(new Date());
+
+      // Si todos los datos son de fallback, mostrar mensaje específico
+      if (hasFallbackData && dashboardData.fallbacksUsed.length >= 4) {
+        setError('Mostrando datos guardados previamente. La conexión con la API puede estar temporalmente limitada.');
+      }
+
+      // Log del estado final
+      console.log('✅ Dashboard data loaded:', {
+        globalStats: !!dashboardData.globalStats,
+        coins: dashboardData.coins?.length || 0,
+        trending: dashboardData.trending?.coins?.length || 0,
+        pieChart: dashboardData.pieChart?.length || 0,
+        historical: dashboardData.historical?.prices?.length || 0,
+        fallbacksUsed: dashboardData.fallbacksUsed || [],
+        errors: dashboardData.errors || []
+      });
 
     } catch (err) {
-      console.error('Error loading dashboard data:', err);
-      setError('Error al cargar los datos. Por favor, intenta de nuevo.');
+      console.error('💥 Critical error loading dashboard data:', {
+        error: err.message,
+        stack: err.stack
+      });
       
-      // Si falla, intentar limpiar cache y cargar datos básicos
+      // En caso de error crítico, intentar cargar datos básicos de cache
       try {
-        coinGeckoService.clearCache();
-        const basicData = await coinGeckoService.getCoins(1, 10);
-        setCoins(basicData);
-      } catch (basicErr) {
-        console.error('Error loading basic data:', basicErr);
+        console.log('🔄 Attempting to load any cached data...');
+        const cacheStats = coinGeckoService.getCacheStats();
+        console.log('Cache state:', cacheStats);
+        
+        // Si hay datos en cache persistente, intentar usarlos
+        if (cacheStats.persistentCache.size > 0) {
+          setError('Error de conexión. Mostrando datos guardados anteriormente.');
+          setUsingFallbackData(true);
+          
+          // Aquí podrías implementar lógica específica para cargar desde cache persistente
+          // Por ahora, mantener los datos existentes si los hay
+        } else {
+          setError('Error al cargar los datos y no hay datos guardados disponibles. Por favor, verifica tu conexión a internet e intenta de nuevo.');
+        }
+      } catch (cacheErr) {
+        console.error('Error accessing cache:', cacheErr);
+        setError('Error al cargar los datos. Por favor, intenta de nuevo.');
       }
     } finally {
       setLoading(false);
@@ -77,12 +142,27 @@ const Dashboard = () => {
 
   const refreshData = async () => {
     setRefreshing(true);
+    setError(''); // Limpiar errores previos
     
-    // Limpiar cache para obtener datos frescos
-    coinGeckoService.cleanExpiredCache();
-    
-    await loadInitialData();
-    setRefreshing(false);
+    try {
+      console.log('🔄 Manual refresh initiated...');
+      
+      // Limpiar solo cache normal para obtener datos frescos, pero mantener fallback
+      coinGeckoService.cleanExpiredCache();
+      
+      await loadInitialData();
+      
+      // Si la actualización fue exitosa y no hay errores, limpiar el estado de fallback
+      if (!error && !usingFallbackData) {
+        console.log('✅ Manual refresh completed successfully');
+      }
+      
+    } catch (err) {
+      console.error('Error during manual refresh:', err);
+      setError('Error al actualizar los datos. Mostrando información disponible.');
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   const handleSearch = async (query) => {
@@ -215,6 +295,19 @@ const Dashboard = () => {
                 <p className="text-lg sm:text-xl text-gray-700 mb-2">
                   Bienvenido de vuelta, <strong className="text-gray-900">{user?.fullName}</strong>
                 </p>
+                {/* Indicador de estado de datos */}
+                {usingFallbackData && (
+                  <div className="flex items-center space-x-2 text-sm text-amber-600 bg-amber-50 px-3 py-1 rounded-lg border border-amber-200">
+                    <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span>
+                    <span>Mostrando datos guardados - Actualizando en segundo plano</span>
+                  </div>
+                )}
+                {lastDataUpdate && !usingFallbackData && (
+                  <div className="flex items-center space-x-2 text-sm text-green-600">
+                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                    <span>Última actualización: {lastDataUpdate.toLocaleTimeString()}</span>
+                  </div>
+                )}
               </div>
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
                 <button
@@ -227,6 +320,23 @@ const Dashboard = () => {
                   <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} aria-hidden="true" />
                   <span>{refreshing ? 'Actualizando...' : 'Actualizar'}</span>
                 </button>
+                
+                {/* Botón de limpieza de cache para admins */}
+                {user?.role === 'admin' && (
+                  <button
+                    onClick={() => {
+                      coinGeckoService.clearAllCache();
+                      setError('');
+                      setUsingFallbackData(false);
+                      loadInitialData();
+                    }}
+                    className="flex items-center justify-center space-x-2 bg-red-600 hover:bg-red-700 text-white px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 text-sm sm:text-base"
+                    title="Limpiar todo el cache y recargar (Admin)"
+                  >
+                    <span>🧹</span>
+                    <span>Limpiar Cache</span>
+                  </button>
+                )}
               </div>
             </div>
 
@@ -331,6 +441,28 @@ const Dashboard = () => {
             <section className="mb-6" aria-labelledby="admin-panel-heading">
               <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
                 <h3 id="admin-panel-heading" className="text-lg font-bold text-gray-800 mb-4">Panel de Administrador</h3>
+                
+                {/* Cache Status */}
+                <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                  <h4 className="font-semibold text-gray-700 mb-2">Estado del Cache</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-600">Cache Normal: </span>
+                      <span className="font-medium">{coinGeckoService.getCacheStats().normalCache.size} entradas</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Cache Persistente: </span>
+                      <span className="font-medium">{coinGeckoService.getCacheStats().persistentCache.size} entradas</span>
+                    </div>
+                    <div className="sm:col-span-2">
+                      <span className="text-gray-600">Usando datos de respaldo: </span>
+                      <span className={`font-medium ${usingFallbackData ? 'text-amber-600' : 'text-green-600'}`}>
+                        {usingFallbackData ? 'Sí' : 'No'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <button 
                     className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-left"

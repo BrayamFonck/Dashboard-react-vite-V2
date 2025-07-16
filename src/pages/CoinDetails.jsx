@@ -5,7 +5,7 @@ import HistoricalChart from '../components/HistoricalChart';
 import Loader from '../components/Loader';
 import ErrorMessage from '../components/ErrorMessage';
 import coinGeckoService from '../services/coingeckoService';
-import { ArrowLeft, TrendingUp, TrendingDown, Globe, Calendar, DollarSign, BarChart3 } from 'lucide-react';
+import { ArrowLeft, TrendingUp, TrendingDown, Globe, Calendar, DollarSign, BarChart3, RefreshCw } from 'lucide-react';
 
 const CoinDetails = () => {
   const { coinId } = useParams();
@@ -15,6 +15,9 @@ const CoinDetails = () => {
   const [coinData, setCoinData] = useState(null);
   const [historicalData, setHistoricalData] = useState([]);
   const [timeRange, setTimeRange] = useState(7);
+  const [usingFallbackData, setUsingFallbackData] = useState(false);
+  const [lastDataUpdate, setLastDataUpdate] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (coinId) {
@@ -26,25 +29,84 @@ const CoinDetails = () => {
     try {
       setLoading(true);
       setError('');
+      setUsingFallbackData(false);
 
-      // Cargar datos de la moneda y datos históricos en paralelo
+      console.log(`🚀 Loading data for coin: ${coinId}`);
+
+      // Intentar cargar datos frescos
       const [coinDetails, historical] = await Promise.all([
-        coinGeckoService.getCoinById(coinId),
-        coinGeckoService.getCoinHistory(coinId, timeRange)
+        coinGeckoService.getCoinById(coinId).catch(async (error) => {
+          console.error(`❌ Error loading coin details for ${coinId}:`, error.message);
+          
+          // Intentar obtener datos de cache persistente
+          const fallbackKey = coinGeckoService.getCacheKey('coinById', { id: coinId });
+          const fallbackCached = coinGeckoService.persistentCache.get(fallbackKey);
+          
+          if (fallbackCached && (Date.now() - fallbackCached.timestamp) < coinGeckoService.fallbackCacheTimeout) {
+            console.warn(`🔄 Using fallback cache data for coin ${coinId} (age: ${Math.floor((Date.now() - fallbackCached.timestamp) / 1000)}s)`);
+            setUsingFallbackData(true);
+            return fallbackCached.data;
+          }
+          
+          throw error;
+        }),
+        coinGeckoService.getCoinHistory(coinId, timeRange).catch(async (error) => {
+          console.error(`❌ Error loading historical data for ${coinId}:`, error.message);
+          
+          // Intentar obtener datos históricos de cache persistente
+          const fallbackKey = coinGeckoService.getCacheKey('history', { coinId, days: timeRange });
+          const fallbackCached = coinGeckoService.persistentCache.get(fallbackKey);
+          
+          if (fallbackCached && (Date.now() - fallbackCached.timestamp) < coinGeckoService.fallbackCacheTimeout) {
+            console.warn(`🔄 Using fallback cache data for historical ${coinId} (age: ${Math.floor((Date.now() - fallbackCached.timestamp) / 1000)}s)`);
+            if (!usingFallbackData) setUsingFallbackData(true);
+            return fallbackCached.data;
+          }
+          
+          // Si no hay datos históricos, devolver estructura vacía para no romper la interfaz
+          return { prices: [] };
+        })
       ]);
 
       setCoinData(coinDetails);
       
       // Procesar datos históricos
-      const processedHistoricalData = historical.prices.map(([timestamp, price]) => ({
-        timestamp,
-        price: price.toFixed(2)
-      }));
-      setHistoricalData(processedHistoricalData);
+      if (historical && historical.prices && historical.prices.length > 0) {
+        const processedHistoricalData = historical.prices.map(([timestamp, price]) => ({
+          timestamp,
+          price: price.toFixed(2)
+        }));
+        setHistoricalData(processedHistoricalData);
+      } else {
+        setHistoricalData([]);
+      }
+
+      setLastDataUpdate(new Date());
+
+      // Limpiar errores si la carga fue exitosa
+      if (!usingFallbackData) {
+        console.log(`✅ Fresh data loaded successfully for ${coinId}`);
+      } else {
+        setError(`Mostrando datos guardados para ${coinDetails.name}. La información puede no estar actualizada.`);
+        console.warn(`⚠️ Loaded ${coinId} with fallback data`);
+      }
 
     } catch (err) {
-      console.error('Error loading coin data:', err);
-      setError('Error al cargar los datos de la moneda. Por favor, intenta de nuevo.');
+      console.error(`💥 Critical error loading coin data for ${coinId}:`, {
+        error: err.message,
+        stack: err.stack,
+        coinId,
+        timeRange
+      });
+
+      // Solo mostrar error si no tenemos datos previos
+      if (!coinData) {
+        setError('Error al cargar los datos de la moneda. Por favor, intenta de nuevo.');
+      } else {
+        // Si ya tenemos datos, solo mostrar warning
+        setError('No se pudieron actualizar los datos. Mostrando información anterior.');
+        console.warn(`⚠️ Keeping previous data for ${coinId} due to error`);
+      }
     } finally {
       setLoading(false);
     }
@@ -52,6 +114,30 @@ const CoinDetails = () => {
 
   const handleTimeRangeChange = (days) => {
     setTimeRange(days);
+  };
+
+  const refreshData = async () => {
+    setRefreshing(true);
+    setError(''); // Limpiar errores previos
+    
+    try {
+      console.log(`🔄 Manual refresh initiated for ${coinId}`);
+      
+      // Limpiar solo cache normal para obtener datos frescos, pero mantener fallback
+      coinGeckoService.cleanExpiredCache();
+      
+      await loadCoinData();
+      
+      if (!error && !usingFallbackData) {
+        console.log(`✅ Manual refresh completed successfully for ${coinId}`);
+      }
+      
+    } catch (err) {
+      console.error(`Error during manual refresh for ${coinId}:`, err);
+      setError('Error al actualizar los datos. Mostrando información disponible.');
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   const formatPrice = (price) => {
@@ -73,11 +159,11 @@ const CoinDetails = () => {
     );
   };
 
-  if (loading) {
+  if (loading && !coinData) {
     return <Loader message="Cargando detalles de la moneda..." />;
   }
 
-  if (error) {
+  if (error && !coinData) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
@@ -86,10 +172,17 @@ const CoinDetails = () => {
           <div className="text-center mt-6">
             <button
               onClick={() => navigate('/dashboard')}
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors mr-4"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Volver al Dashboard
+            </button>
+            <button
+              onClick={loadCoinData}
+              className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Reintentar
             </button>
           </div>
         </div>
@@ -125,14 +218,50 @@ const CoinDetails = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header con botón de regreso */}
           <div className="mb-6">
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="inline-flex items-center px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors mb-4"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Volver al Dashboard
-            </button>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="inline-flex items-center px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Volver al Dashboard
+              </button>
+
+              <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                {/* Indicador de estado de datos */}
+                {usingFallbackData && (
+                  <div className="flex items-center space-x-2 text-sm text-amber-600 bg-amber-50 px-3 py-1 rounded-lg border border-amber-200">
+                    <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span>
+                    <span>Datos guardados - Puede no estar actualizado</span>
+                  </div>
+                )}
+                {lastDataUpdate && !usingFallbackData && (
+                  <div className="flex items-center space-x-2 text-sm text-green-600">
+                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                    <span>Actualizado: {lastDataUpdate.toLocaleTimeString()}</span>
+                  </div>
+                )}
+
+                {/* Botón de actualizar */}
+                <button
+                  onClick={refreshData}
+                  disabled={refreshing}
+                  className="flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-sm"
+                  aria-label={refreshing ? 'Actualizando datos' : 'Actualizar datos de la moneda'}
+                >
+                  <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} aria-hidden="true" />
+                  <span>{refreshing ? 'Actualizando...' : 'Actualizar'}</span>
+                </button>
+              </div>
+            </div>
           </div>
+
+          {/* Mensaje de error no crítico */}
+          {error && coinData && (
+            <div className="mb-6" role="alert" aria-live="polite">
+              <ErrorMessage message={error} onClose={() => setError('')} />
+            </div>
+          )}
 
           {/* Información principal de la moneda */}
           <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
@@ -312,12 +441,31 @@ const CoinDetails = () => {
             </div>
 
             <div className="h-96">
-              <HistoricalChart 
-                data={historicalData}
-                title=""
-                coinName={coinData.name}
-                showTitle={false}
-              />
+              {historicalData && historicalData.length > 0 ? (
+                <HistoricalChart 
+                  data={historicalData}
+                  title=""
+                  coinName={coinData.name}
+                  showTitle={false}
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                  <div className="text-center">
+                    <BarChart3 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500 text-lg font-medium">No hay datos históricos disponibles</p>
+                    <p className="text-gray-400 text-sm mt-2">
+                      Los datos del gráfico no pudieron cargarse para el período seleccionado
+                    </p>
+                    <button
+                      onClick={refreshData}
+                      className="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                    >
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Reintentar carga de gráfico
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -331,6 +479,35 @@ const CoinDetails = () => {
                   __html: coinData.description.en.split('.')[0] + '.' 
                 }}
               />
+            </div>
+          )}
+
+          {/* Información sobre datos de fallback */}
+          {usingFallbackData && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mt-6">
+              <div className="flex items-start space-x-3">
+                <div className="flex-shrink-0">
+                  <span className="w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center">
+                    <span className="w-2 h-2 bg-white rounded-full"></span>
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-amber-800 font-medium">Información sobre los datos mostrados</h3>
+                  <p className="text-amber-700 text-sm mt-1">
+                    Los datos mostrados fueron obtenidos de cache local debido a limitaciones temporales de la API. 
+                    La información puede no reflejar los valores más recientes del mercado. 
+                    Intenta actualizar en unos minutos para obtener datos frescos.
+                  </p>
+                  <button
+                    onClick={refreshData}
+                    disabled={refreshing}
+                    className="mt-3 inline-flex items-center px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-md text-sm font-medium transition-colors disabled:opacity-50"
+                  >
+                    <RefreshCw className={`w-3 h-3 mr-1 ${refreshing ? 'animate-spin' : ''}`} />
+                    {refreshing ? 'Actualizando...' : 'Intentar actualizar ahora'}
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </div>
