@@ -106,39 +106,40 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Dashboard de Criptomonedas
-              </h1>
-              <p className="text-gray-600">
-                Bienvenido de vuelta, <strong>{user?.fullName}</strong>
-              </p>
+      {/* Main content with full width background */}
+      <div className="bg-gray-50 min-h-screen pt-14 sm:pt-16">
+        <main className="max-w-7xl mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8" role="main">
+          <div className="py-4 sm:py-6">
+            {/* Header */}
+            <div className="flex flex-col space-y-4 sm:flex-row sm:justify-between sm:items-start sm:space-y-0 mb-6 sm:mb-8">
+              <div>
+                <p className="text-lg sm:text-xl text-gray-700 mb-2">
+                  Bienvenido de vuelta, <strong className="text-gray-900">{user?.fullName}</strong>
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                <button
+                  onClick={refreshData}
+                  disabled={refreshing}
+                  className="flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-sm sm:text-base"
+                  aria-label={refreshing ? 'Actualizando datos' : 'Actualizar datos del dashboard'}
+                  aria-describedby="refresh-status"
+                >
+                  <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} aria-hidden="true" />
+                  <span>{refreshing ? 'Actualizando...' : 'Actualizar'}</span>
+                </button>
+              </div>
             </div>
-            <div className="flex items-center space-x-4 mt-4 sm:mt-0">
-              <button
-                onClick={refreshData}
-                disabled={refreshing}
-                className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
-              >
-                <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-                <span>{refreshing ? 'Actualizando...' : 'Actualizar'}</span>
-              </button>
-            </div>
-          </div>
 
           {/* Error Message */}
           {error && (
-            <div className="mb-6">
+            <div className="mb-4 sm:mb-6" role="alert" aria-live="polite">
               <ErrorMessage message={error} onClose={() => setError('')} />
             </div>
           )}
 
           {/* Search Bar */}
-          <div className="mb-8">
+          <div className="mb-6 sm:mb-8">
             <SearchBar 
               onSearch={handleSearch}
               placeholder="Buscar criptomonedas..."
@@ -147,98 +148,119 @@ const Dashboard = () => {
 
           {/* Stats Cards */}
           {globalStats && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <StatCard
-                title="Cap. Mercado Total"
-                value={`$${coinGeckoService.formatNumber(globalStats.total_market_cap.usd)}`}
-                change={globalStats.market_cap_change_percentage_24h_usd}
-                changePercent={globalStats.market_cap_change_percentage_24h_usd?.toFixed(2)}
-                icon={DollarSign}
-                color="blue"
-              />
-              <StatCard
-                title="Volumen 24h"
-                value={`$${coinGeckoService.formatNumber(globalStats.total_volume.usd)}`}
-                change={5.2}
-                changePercent="5.2"
-                icon={BarChart3}
-                color="green"
-              />
-              <StatCard
-                title="Dominancia BTC"
-                value={`${globalStats.market_cap_percentage.btc?.toFixed(1)}%`}
-                change={globalStats.market_cap_percentage.btc - 45}
-                changePercent={(globalStats.market_cap_percentage.btc - 45)?.toFixed(2)}
-                icon={TrendingUp}
-                color="orange"
-              />
-              <StatCard
-                title="Criptomonedas Activas"
-                value={globalStats.active_cryptocurrencies?.toLocaleString()}
-                change={2.1}
-                changePercent="2.1"
-                icon={Globe}
-                color="purple"
-              />
-            </div>
+            <section className="mb-6 sm:mb-8" aria-labelledby="stats-heading">
+              <h2 id="stats-heading" className="sr-only">Estadísticas del mercado</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                <StatCard
+                  title="Cap. Mercado Total"
+                  value={`$${coinGeckoService.formatNumber(globalStats.total_market_cap.usd)}`}
+                  change={globalStats.market_cap_change_percentage_24h_usd}
+                  changePercent={globalStats.market_cap_change_percentage_24h_usd?.toFixed(2)}
+                  icon={DollarSign}
+                  color="blue"
+                />
+                <StatCard
+                  title="Volumen 24h"
+                  value={`$${coinGeckoService.formatNumber(globalStats.total_volume.usd)}`}
+                  change={5.2}
+                  changePercent="5.2"
+                  icon={BarChart3}
+                  color="green"
+                />
+                <StatCard
+                  title="Dominancia BTC"
+                  value={`${globalStats.market_cap_percentage.btc?.toFixed(1)}%`}
+                  change={globalStats.market_cap_percentage.btc - 45}
+                  changePercent={(globalStats.market_cap_percentage.btc - 45)?.toFixed(2)}
+                  icon={TrendingUp}
+                  color="orange"
+                />
+                <StatCard
+                  title="Criptomonedas Activas"
+                  value={globalStats.active_cryptocurrencies?.toLocaleString()}
+                  change={2.1}
+                  changePercent="2.1"
+                  icon={Globe}
+                  color="purple"
+                />
+              </div>
+            </section>
           )}
 
           {/* Charts Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            {/* Pie Chart */}
-            <div className="lg:col-span-1">
-              <CryptoPieChart data={pieChartData} />
+          <section className="mb-6 sm:mb-8" aria-labelledby="charts-heading">
+            <h2 id="charts-heading" className="sr-only">Gráficos de análisis</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+              {/* Pie Chart */}
+              <div className="lg:col-span-1">
+                <CryptoPieChart data={pieChartData} />
+              </div>
+              
+              {/* Historical Chart */}
+              <div className="lg:col-span-2">
+                <HistoricalChart 
+                  data={historicalData}
+                  title="Precio Histórico (7 días)"
+                  coinName={coins.find(c => c.id === selectedCoin)?.name || 'Bitcoin'}
+                />
+              </div>
             </div>
-            
-            {/* Historical Chart */}
-            <div className="lg:col-span-2">
-              <HistoricalChart 
-                data={historicalData}
-                title="Precio Histórico (7 días)"
-                coinName={coins.find(c => c.id === selectedCoin)?.name || 'Bitcoin'}
-              />
-            </div>
-          </div>
+          </section>
 
           {/* Second Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-            {/* Trending Coins */}
-            <div className="lg:col-span-1">
-              <TrendingCoins coins={trendingCoins} />
+          <section className="mb-6 sm:mb-8" aria-labelledby="data-section-heading">
+            <h2 id="data-section-heading" className="sr-only">Datos de mercado y tendencias</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
+              {/* Trending Coins */}
+              <div className="lg:col-span-1 order-2 lg:order-1">
+                <TrendingCoins coins={trendingCoins} />
+              </div>
+              
+              {/* Main Table */}
+              <div className="lg:col-span-3 order-1 lg:order-2">
+                <CoinTable 
+                  coins={coins}
+                  loading={loading}
+                  onCoinSelect={handleCoinSelect}
+                />
+              </div>
             </div>
-            
-            {/* Main Table */}
-            <div className="lg:col-span-3">
-              <CoinTable 
-                coins={coins}
-                loading={loading}
-                onCoinSelect={handleCoinSelect}
-              />
-            </div>
-          </div>
+          </section>
 
           {/* Quick Actions for Admin */}
           {user?.role === 'admin' && (
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h3 className="text-lg font-bold text-gray-800 mb-4">Panel de Administrador</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <button className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors">
-                  <h4 className="font-semibold text-gray-800">Gestionar Usuarios</h4>
-                  <p className="text-sm text-gray-600">Administrar cuentas de usuario</p>
-                </button>
-                <button className="p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 transition-colors">
-                  <h4 className="font-semibold text-gray-800">Configuración API</h4>
-                  <p className="text-sm text-gray-600">Configurar conexiones de datos</p>
-                </button>
-                <button className="p-4 border border-gray-200 rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-colors">
-                  <h4 className="font-semibold text-gray-800">Reportes</h4>
-                  <p className="text-sm text-gray-600">Generar informes detallados</p>
-                </button>
+            <section className="mb-6" aria-labelledby="admin-panel-heading">
+              <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
+                <h3 id="admin-panel-heading" className="text-lg font-bold text-gray-800 mb-4">Panel de Administrador</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <button 
+                    className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-left"
+                    aria-describedby="manage-users-desc"
+                  >
+                    <h4 className="font-semibold text-gray-800">Gestionar Usuarios</h4>
+                    <p id="manage-users-desc" className="text-sm text-gray-600">Administrar cuentas de usuario</p>
+                  </button>
+                  <button 
+                    className="p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 text-left"
+                    aria-describedby="api-config-desc"
+                  >
+                    <h4 className="font-semibold text-gray-800">Configuración API</h4>
+                    <p id="api-config-desc" className="text-sm text-gray-600">Configurar conexiones de datos</p>
+                  </button>
+                  <button 
+                    className="p-4 border border-gray-200 rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 text-left sm:col-span-2 lg:col-span-1"
+                    aria-describedby="reports-desc"
+                  >
+                    <h4 className="font-semibold text-gray-800">Reportes</h4>
+                    <p id="reports-desc" className="text-sm text-gray-600">Generar informes detallados</p>
+                  </button>
+                </div>
               </div>
-            </div>
+            </section>
           )}
-        </div>
-      </main>
+          </div>
+        </main>
+      </div>
     </div>
   );
 };
