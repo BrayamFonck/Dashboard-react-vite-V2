@@ -146,7 +146,7 @@ pnpm install
 No se requiere configuración adicional de variables de entorno. El proyecto utiliza la API pública gratuita de CoinGecko.
 
 **Usuarios de Prueba:**
-- **Usuario**: demo@usuario.com | **Contraseña**: demo123
+- **Usuario**: maria@colaborador.com | **Contraseña**: colaborador123
 - **Admin**: admin@admin.com | **Contraseña**: admin123
 
 ## 🎮 Uso
@@ -603,7 +603,6 @@ Si aplica, agregar screenshots para explicar el problema.
 - 🐙 **GitHub**: [@BrayamFonck](https://github.com/BrayamFonck)
 - 💼 **LinkedIn**: [Brayan Steven Fonseca González](https://www.linkedin.com/in/brayan-steven-fonseca-gonzalez/)
 - 📧 **Email**: [brayamfonck@gmail.com](mailto:brayamfonck@gmail.com)
-- 🌐 **Portfolio**: [En construcción]
 
 ### 💬 Formas de Contacto
 - **🐛 Issues Técnicos**: [GitHub Issues](https://github.com/BrayamFonck/Dashboard-react-vite-V2/issues)
