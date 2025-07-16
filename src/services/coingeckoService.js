@@ -109,15 +109,54 @@ class CoinGeckoService {
   // Obtener lista de las top 10 monedas para el gráfico de pastel
   async getTopCoinsForPieChart() {
     try {
-      const coins = await this.getCoins(1, 10);
-      return coins.map(coin => ({
-        name: coin.name,
-        symbol: coin.symbol,
-        value: coin.market_cap,
-        price: coin.current_price,
-        change: coin.price_change_percentage_24h,
-        color: this.generateColor(coin.symbol)
-      }));
+      const coins = await this.getCoins(1, 15); // Obtenemos más monedas para poder agrupar
+      
+      // Calcular el total del mercado para obtener porcentajes
+      const totalMarketCap = coins.reduce((sum, coin) => sum + coin.market_cap, 0);
+      
+      // Separar monedas con >2% y <2%
+      const majorCoins = [];
+      const minorCoins = [];
+      
+      coins.forEach(coin => {
+        const percentage = (coin.market_cap / totalMarketCap) * 100;
+        const coinData = {
+          name: coin.name,
+          symbol: coin.symbol,
+          value: coin.market_cap,
+          price: coin.current_price,
+          change: coin.price_change_percentage_24h,
+          percentage: percentage,
+          color: this.generateColor(coin.symbol)
+        };
+        
+        if (percentage >= 2) {
+          majorCoins.push(coinData);
+        } else {
+          minorCoins.push(coinData);
+        }
+      });
+      
+      // Si hay monedas menores, crear grupo "Otras"
+      let result = majorCoins;
+      if (minorCoins.length > 0) {
+        const othersValue = minorCoins.reduce((sum, coin) => sum + coin.value, 0);
+        const othersChange = minorCoins.reduce((sum, coin) => sum + coin.change, 0) / minorCoins.length;
+        
+        result.push({
+          name: 'Otras',
+          symbol: 'others',
+          value: othersValue,
+          price: 0,
+          change: othersChange,
+          percentage: (othersValue / totalMarketCap) * 100,
+          color: '#6B7280', // Color gris más elegante para "Otras"
+          isOthers: true,
+          coinsIncluded: minorCoins.map(coin => coin.symbol.toUpperCase()).join(', ')
+        });
+      }
+      
+      return result;
     } catch (error) {
       console.error('Error en getTopCoinsForPieChart:', error);
       throw error;
@@ -126,9 +165,23 @@ class CoinGeckoService {
 
   // Generar color basado en el símbolo de la moneda
   generateColor(symbol) {
+    // Paleta de colores mejorada con mejor contraste y armonía visual
     const colors = [
-      '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
-      '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9'
+      '#F59E0B', // Amber 500 - Bitcoin style
+      '#3B82F6', // Blue 500 - Ethereum style
+      '#10B981', // Emerald 500 - Tether style
+      '#8B5CF6', // Violet 500 - BNB style
+      '#EF4444', // Red 500 - Cardano style
+      '#06B6D4', // Cyan 500 - Solana style
+      '#F97316', // Orange 500 - Polygon style
+      '#84CC16', // Lime 500 - Avalanche style
+      '#EC4899', // Pink 500 - Polkadot style
+      '#6366F1', // Indigo 500 - Chainlink style
+      '#14B8A6', // Teal 500 - Litecoin style
+      '#A855F7', // Purple 500 - Cosmos style
+      '#F59E0B', // Amber 500 (repeat for more coins)
+      '#DC2626', // Red 600
+      '#059669'  // Emerald 600
     ];
     const index = symbol.charCodeAt(0) % colors.length;
     return colors[index];
