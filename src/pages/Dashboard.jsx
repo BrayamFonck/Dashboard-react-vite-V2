@@ -25,6 +25,8 @@ const Dashboard = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [usingFallbackData, setUsingFallbackData] = useState(false);
   const [lastDataUpdate, setLastDataUpdate] = useState(null);
+  const [historicalTimeRange, setHistoricalTimeRange] = useState(7); // Nuevo estado para el rango de tiempo
+  const [loadingHistorical, setLoadingHistorical] = useState(false); // Estado para carga de datos históricos
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -40,6 +42,37 @@ const Dashboard = () => {
     };
   }, []);
 
+  // Recargar datos históricos cuando cambie el rango de tiempo o la moneda seleccionada
+  useEffect(() => {
+    if (selectedCoin && historicalTimeRange) {
+      // Asegurar que el rango de tiempo sea válido
+      const validRanges = [1, 7, 30, 365];
+      if (!validRanges.includes(historicalTimeRange)) {
+        setHistoricalTimeRange(7); // Resetear a default si no es válido
+        return;
+      }
+      updateHistoricalData();
+    }
+  }, [selectedCoin, historicalTimeRange]);
+
+  const updateHistoricalData = async () => {
+    try {
+      setLoadingHistorical(true);
+      console.log(`📊 Updating historical data for ${selectedCoin} with ${historicalTimeRange} days`);
+      const historicalData = await coinGeckoService.getCoinHistory(selectedCoin, historicalTimeRange);
+      const processedData = historicalData.prices.map(([timestamp, price]) => ({
+        timestamp,
+        price: price.toFixed(2)
+      }));
+      setHistoricalData(processedData);
+    } catch (err) {
+      console.error('Error updating historical data:', err);
+      // No mostrar error aquí para no ser intrusivo
+    } finally {
+      setLoadingHistorical(false);
+    }
+  };
+
   const loadInitialData = async () => {
     try {
       setLoading(true);
@@ -48,7 +81,10 @@ const Dashboard = () => {
       console.log('🚀 Loading dashboard data...');
       
       // Usar el método optimizado para cargar datos del dashboard
-      const dashboardData = await coinGeckoService.loadDashboardData();
+      const dashboardData = await coinGeckoService.loadDashboardData({
+        historicalDays: historicalTimeRange,
+        selectedCoin: selectedCoin
+      });
 
       // Verificar si algún dato usa fallback
       const hasFallbackData = dashboardData.fallbacksUsed && dashboardData.fallbacksUsed.length > 0;
@@ -266,15 +302,53 @@ const Dashboard = () => {
   const handleCoinSelect = async (coinId) => {
     try {
       setSelectedCoin(coinId);
-      const historicalData = await coinGeckoService.getCoinHistory(coinId, 7);
-      const processedData = historicalData.prices.map(([timestamp, price]) => ({
-        timestamp,
-        price: price.toFixed(2)
-      }));
-      setHistoricalData(processedData);
+      // El useEffect se encargará de cargar los datos históricos automáticamente
     } catch (err) {
-      setError('Error al cargar datos históricos');
+      setError('Error al seleccionar la moneda');
     }
+  };
+
+  const handleTimeRangeChange = async (days) => {
+    setHistoricalTimeRange(days);
+    console.log(`📊 User changed historical chart time range to ${days} days`);
+  };
+
+  const getTimeRangeLabel = (days) => {
+    switch (days) {
+      case 1: return '1 Día';
+      case 7: return '7 Días';
+      case 30: return '1 Mes';
+      case 365: return '1 Año';
+      default: return `${days} Días`;
+    }
+  };
+
+  // Obtener lista de monedas disponibles para el dropdown
+  const getAvailableCoins = () => {
+    const defaultCoins = [
+      { id: 'bitcoin', name: 'Bitcoin' },
+      { id: 'ethereum', name: 'Ethereum' },
+      { id: 'cardano', name: 'Cardano' },
+      { id: 'polkadot', name: 'Polkadot' },
+      { id: 'chainlink', name: 'Chainlink' },
+    ];
+
+    // Combinar monedas de la tabla con las predeterminadas
+    const tableCoins = coins.slice(0, 10).map(coin => ({
+      id: coin.id,
+      name: coin.name
+    }));
+
+    // Crear un mapa para evitar duplicados
+    const coinMap = new Map();
+    
+    // Primero agregar monedas predeterminadas
+    defaultCoins.forEach(coin => coinMap.set(coin.id, coin));
+    
+    // Luego agregar monedas de la tabla (esto sobrescribirá si hay duplicados)
+    tableCoins.forEach(coin => coinMap.set(coin.id, coin));
+
+    return Array.from(coinMap.values());
   };
 
   if (loading && !refreshing) {
@@ -407,11 +481,102 @@ const Dashboard = () => {
               
               {/* Historical Chart */}
               <div className="lg:col-span-2">
-                <HistoricalChart 
-                  data={historicalData}
-                  title="Precio Histórico (7 días)"
-                  coinName={coins.find(c => c.id === selectedCoin)?.name || 'Bitcoin'}
-                />
+                <div className="bg-white rounded-xl shadow-lg p-6">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 mb-4 sm:mb-0">
+                      <h3 className="text-lg font-bold text-gray-800">
+                        Precio Histórico
+                      </h3>
+                      
+                      {/* Dropdown de selección de moneda */}
+                      <div className="relative">
+                        <select 
+                          value={selectedCoin}
+                          onChange={(e) => setSelectedCoin(e.target.value)}
+                          disabled={loadingHistorical}
+                          className="appearance-none bg-white border border-gray-300 rounded-lg px-3 py-2 pr-8 text-sm font-medium text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer min-w-[140px] disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {getAvailableCoins().map((coin) => (
+                            <option key={coin.id} value={coin.id}>
+                              {coin.name}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                          {loadingHistorical ? (
+                            <RefreshCw className="w-4 h-4 text-blue-500 animate-spin" />
+                          ) : (
+                            <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <span className="text-sm text-gray-500">
+                        {getTimeRangeLabel(historicalTimeRange)}
+                      </span>
+                    </div>
+                    
+                    {/* Selector de rango de tiempo */}
+                    <div className="flex flex-wrap gap-2">
+                      {[1, 7, 30, 365].map((days) => (
+                        <button
+                          key={days}
+                          onClick={() => handleTimeRangeChange(days)}
+                          disabled={refreshing}
+                          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${
+                            historicalTimeRange === days
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                        >
+                          {days === 1 ? '1D' : days === 7 ? '7D' : days === 30 ? '1M' : '1A'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="h-80 relative">
+                    {loadingHistorical && (
+                      <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <RefreshCw className="w-6 h-6 text-blue-500 animate-spin" />
+                          <span className="text-sm font-medium text-gray-600">
+                            Cargando datos de {getAvailableCoins().find(c => c.id === selectedCoin)?.name || selectedCoin}...
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {historicalData && historicalData.length > 0 ? (
+                      <HistoricalChart 
+                        data={historicalData}
+                        title=""
+                        coinName={getAvailableCoins().find(c => c.id === selectedCoin)?.name || 'Bitcoin'}
+                        showTitle={false}
+                        className="!p-0 !shadow-none !bg-transparent"
+                      />
+                    ) : !loadingHistorical ? (
+                      <div className="flex items-center justify-center h-full bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                        <div className="text-center">
+                          <BarChart3 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                          <p className="text-gray-500 text-lg font-medium">No hay datos históricos disponibles</p>
+                          <p className="text-gray-400 text-sm mt-2">
+                            Los datos del gráfico no pudieron cargarse para {getTimeRangeLabel(historicalTimeRange).toLowerCase()}
+                          </p>
+                          <button
+                            onClick={() => handleTimeRangeChange(historicalTimeRange)}
+                            className="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                          >
+                            <RefreshCw className="w-4 h-4 mr-2" />
+                            Reintentar
+                          </button>
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
               </div>
             </div>
           </section>

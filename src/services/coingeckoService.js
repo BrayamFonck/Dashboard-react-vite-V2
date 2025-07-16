@@ -484,7 +484,9 @@ class CoinGeckoService {
   }
 
   // Método para cargar datos del dashboard de forma optimizada con fallbacks
-  async loadDashboardData() {
+  async loadDashboardData(options = {}) {
+    const { historicalDays = 7, selectedCoin = 'bitcoin' } = options;
+    
     const results = {
       globalStats: null,
       coins: [],
@@ -574,12 +576,12 @@ class CoinGeckoService {
         return { coins: [] };
       });
 
-      const historicalPromise = this.getCoinHistory('bitcoin', 7).catch(error => {
+      const historicalPromise = this.getCoinHistory(selectedCoin, historicalDays).catch(error => {
         console.error('❌ Error loading historical data:', error.message);
         results.errors.push({ type: 'historical', error: error.message });
         
         // Intentar fallback
-        const fallbackKey = this.getCacheKey('history', { coinId: 'bitcoin', days: 7 });
+        const fallbackKey = this.getCacheKey('history', { coinId: selectedCoin, days: historicalDays });
         const fallbackData = this.persistentCache.get(fallbackKey);
         if (fallbackData && (Date.now() - fallbackData.timestamp) < this.fallbackCacheTimeout) {
           results.fallbacksUsed.push('historical');
