@@ -27,6 +27,15 @@ const Dashboard = () => {
   // Cargar datos iniciales
   useEffect(() => {
     loadInitialData();
+    
+    // Limpiar cache expirado cada 5 minutos
+    const cacheCleanInterval = setInterval(() => {
+      coinGeckoService.cleanExpiredCache();
+    }, 5 * 60 * 1000); // 5 minutos
+
+    return () => {
+      clearInterval(cacheCleanInterval);
+    };
   }, []);
 
   const loadInitialData = async () => {
@@ -34,22 +43,16 @@ const Dashboard = () => {
       setLoading(true);
       setError('');
 
-      // Cargar datos en paralelo
-      const [globalData, coinsData, trendingData, pieData, historicalData] = await Promise.all([
-        coinGeckoService.getGlobalStats(),
-        coinGeckoService.getCoins(1, 20),
-        coinGeckoService.getTrendingCoins(),
-        coinGeckoService.getTopCoinsForPieChart(),
-        coinGeckoService.getCoinHistory(selectedCoin, 7)
-      ]);
+      // Usar el método optimizado para cargar datos del dashboard
+      const dashboardData = await coinGeckoService.loadDashboardData();
 
-      setGlobalStats(globalData.data);
-      setCoins(coinsData);
-      setTrendingCoins(trendingData.coins || []);
-      setPieChartData(pieData);
+      setGlobalStats(dashboardData.globalStats.data);
+      setCoins(dashboardData.coins);
+      setTrendingCoins(dashboardData.trending.coins || []);
+      setPieChartData(dashboardData.pieChart);
       
       // Procesar datos históricos
-      const processedHistoricalData = historicalData.prices.map(([timestamp, price]) => ({
+      const processedHistoricalData = dashboardData.historical.prices.map(([timestamp, price]) => ({
         timestamp,
         price: price.toFixed(2)
       }));
@@ -58,6 +61,15 @@ const Dashboard = () => {
     } catch (err) {
       console.error('Error loading dashboard data:', err);
       setError('Error al cargar los datos. Por favor, intenta de nuevo.');
+      
+      // Si falla, intentar limpiar cache y cargar datos básicos
+      try {
+        coinGeckoService.clearCache();
+        const basicData = await coinGeckoService.getCoins(1, 10);
+        setCoins(basicData);
+      } catch (basicErr) {
+        console.error('Error loading basic data:', basicErr);
+      }
     } finally {
       setLoading(false);
     }
@@ -65,6 +77,10 @@ const Dashboard = () => {
 
   const refreshData = async () => {
     setRefreshing(true);
+    
+    // Limpiar cache para obtener datos frescos
+    coinGeckoService.cleanExpiredCache();
+    
     await loadInitialData();
     setRefreshing(false);
   };
@@ -75,35 +91,49 @@ const Dashboard = () => {
     try {
       setLoading(true);
       setError('');
+      
+      // Pequeño delay para evitar rate limiting
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       const searchResults = await coinGeckoService.searchCoinsIntelligent(query);
       
       if (searchResults.results.length > 0) {
-        // Obtener datos detallados de las monedas encontradas
-        const coinIds = searchResults.results.slice(0, 10).map(coin => coin.id);
-        const detailedCoins = await Promise.all(
-          coinIds.map(id => coinGeckoService.getCoinById(id).catch(() => null))
-        );
+        // Obtener datos detallados de las monedas encontradas con delay
+        const coinIds = searchResults.results.slice(0, 5).map(coin => coin.id); // Reducir a 5 para evitar rate limiting
         
-        // Filtrar resultados válidos y formatear para la tabla
-        const validCoins = detailedCoins.filter(coin => coin !== null).map(coin => ({
-          id: coin.id,
-          name: coin.name,
-          symbol: coin.symbol,
-          image: coin.image.small,
-          current_price: coin.market_data.current_price.usd,
-          market_cap: coin.market_data.market_cap.usd,
-          market_cap_rank: coin.market_cap_rank,
-          price_change_percentage_24h: coin.market_data.price_change_percentage_24h,
-          price_change_percentage_7d_in_currency: coin.market_data.price_change_percentage_7d,
-          total_volume: coin.market_data.total_volume.usd,
-          sparkline_in_7d: { price: [] } // Placeholder para sparkline
-        }));
+        const detailedCoins = [];
+        for (const id of coinIds) {
+          try {
+            const coin = await coinGeckoService.getCoinById(id);
+            if (coin) {
+              detailedCoins.push({
+                id: coin.id,
+                name: coin.name,
+                symbol: coin.symbol,
+                image: coin.image.small,
+                current_price: coin.market_data.current_price.usd,
+                market_cap: coin.market_data.market_cap.usd,
+                market_cap_rank: coin.market_cap_rank,
+                price_change_percentage_24h: coin.market_data.price_change_percentage_24h,
+                price_change_percentage_7d_in_currency: coin.market_data.price_change_percentage_7d,
+                total_volume: coin.market_data.total_volume.usd,
+                sparkline_in_7d: { price: [] }
+              });
+            }
+            // Delay entre requests
+            await new Promise(resolve => setTimeout(resolve, 150));
+          } catch (coinErr) {
+            console.warn(`Error loading coin ${id}:`, coinErr);
+          }
+        }
         
-        setCoins(validCoins);
+        if (detailedCoins.length > 0) {
+          setCoins(detailedCoins);
+        }
       }
     } catch (err) {
       console.error('Error en búsqueda:', err);
-      setError('Error en la búsqueda. Por favor, intenta de nuevo.');
+      setError('Error en la búsqueda. La API puede estar temporalmente sobrecargada. Intenta de nuevo en unos segundos.');
     } finally {
       setLoading(false);
     }

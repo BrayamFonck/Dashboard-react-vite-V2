@@ -2,92 +2,165 @@
 class CoinGeckoService {
   constructor() {
     this.baseURL = 'https://api.coingecko.com/api/v3';
+    this.cache = new Map();
+    this.cacheTimeout = 60000; // 1 minuto de cache
+    this.requestQueue = [];
+    this.isProcessingQueue = false;
+    this.lastRequestTime = 0;
+    this.minRequestInterval = 100; // 100ms entre requests
+  }
+
+  // Método para agregar delay entre requests
+  async delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  // Método para hacer requests con rate limiting
+  async makeRequest(url, options = {}) {
+    return new Promise((resolve, reject) => {
+      this.requestQueue.push({ url, options, resolve, reject });
+      this.processQueue();
+    });
+  }
+
+  // Procesar cola de requests
+  async processQueue() {
+    if (this.isProcessingQueue || this.requestQueue.length === 0) {
+      return;
+    }
+
+    this.isProcessingQueue = true;
+
+    while (this.requestQueue.length > 0) {
+      const { url, options, resolve, reject } = this.requestQueue.shift();
+      
+      try {
+        // Asegurar que haya al menos 100ms entre requests
+        const timeSinceLastRequest = Date.now() - this.lastRequestTime;
+        if (timeSinceLastRequest < this.minRequestInterval) {
+          await this.delay(this.minRequestInterval - timeSinceLastRequest);
+        }
+
+        const response = await fetch(url, {
+          ...options,
+          headers: {
+            'Accept': 'application/json',
+            ...options.headers
+          }
+        });
+
+        this.lastRequestTime = Date.now();
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        resolve(data);
+      } catch (error) {
+        reject(error);
+      }
+
+      // Pequeño delay adicional para ser más conservadores
+      await this.delay(50);
+    }
+
+    this.isProcessingQueue = false;
+  }
+
+  // Método para cache
+  getCacheKey(endpoint, params = {}) {
+    return `${endpoint}_${JSON.stringify(params)}`;
+  }
+
+  // Obtener datos del cache o hacer request
+  async getCachedData(cacheKey, fetchFunction) {
+    const cached = this.cache.get(cacheKey);
+    if (cached && (Date.now() - cached.timestamp) < this.cacheTimeout) {
+      return cached.data;
+    }
+
+    const data = await fetchFunction();
+    this.cache.set(cacheKey, {
+      data,
+      timestamp: Date.now()
+    });
+    return data;
   }
 
   // Obtener lista de monedas con datos de mercado
   async getCoins(page = 1, perPage = 10) {
-    try {
-      const response = await fetch(
-        `${this.baseURL}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${perPage}&page=${page}&sparkline=true&price_change_percentage=1h,24h,7d`
-      );
-      
-      if (!response.ok) {
-        throw new Error('Error al obtener las monedas');
+    const cacheKey = this.getCacheKey('coins', { page, perPage });
+    
+    return this.getCachedData(cacheKey, async () => {
+      try {
+        const url = `${this.baseURL}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${perPage}&page=${page}&sparkline=true&price_change_percentage=1h,24h,7d`;
+        return await this.makeRequest(url);
+      } catch (error) {
+        console.error('Error en getCoins:', error);
+        throw error;
       }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Error en getCoins:', error);
-      throw error;
-    }
+    });
   }
 
   // Obtener estadísticas globales del mercado
   async getGlobalStats() {
-    try {
-      const response = await fetch(`${this.baseURL}/global`);
-      
-      if (!response.ok) {
-        throw new Error('Error al obtener estadísticas globales');
+    const cacheKey = this.getCacheKey('global');
+    
+    return this.getCachedData(cacheKey, async () => {
+      try {
+        const url = `${this.baseURL}/global`;
+        return await this.makeRequest(url);
+      } catch (error) {
+        console.error('Error en getGlobalStats:', error);
+        throw error;
       }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Error en getGlobalStats:', error);
-      throw error;
-    }
+    });
   }
 
   // Obtener datos históricos de una moneda
   async getCoinHistory(coinId, days = 7) {
-    try {
-      const response = await fetch(
-        `${this.baseURL}/coins/${coinId}/market_chart?vs_currency=usd&days=${days}`
-      );
-      
-      if (!response.ok) {
-        throw new Error('Error al obtener datos históricos');
+    const cacheKey = this.getCacheKey('history', { coinId, days });
+    
+    return this.getCachedData(cacheKey, async () => {
+      try {
+        const url = `${this.baseURL}/coins/${coinId}/market_chart?vs_currency=usd&days=${days}`;
+        return await this.makeRequest(url);
+      } catch (error) {
+        console.error('Error en getCoinHistory:', error);
+        throw error;
       }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Error en getCoinHistory:', error);
-      throw error;
-    }
+    });
   }
 
   // Obtener datos de una moneda específica
   async getCoinById(id) {
-    try {
-      const response = await fetch(
-        `${this.baseURL}/coins/${id}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=true`
-      );
-      
-      if (!response.ok) {
-        throw new Error('Error al obtener la moneda');
+    const cacheKey = this.getCacheKey('coinById', { id });
+    
+    return this.getCachedData(cacheKey, async () => {
+      try {
+        const url = `${this.baseURL}/coins/${id}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=true`;
+        return await this.makeRequest(url);
+      } catch (error) {
+        console.error('Error en getCoinById:', error);
+        throw error;
       }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Error en getCoinById:', error);
-      throw error;
-    }
+    });
   }
 
   // Obtener trending coins
   async getTrendingCoins() {
-    try {
-      const response = await fetch(`${this.baseURL}/search/trending`);
-      
-      if (!response.ok) {
-        throw new Error('Error al obtener monedas trending');
+    const cacheKey = this.getCacheKey('trending');
+    
+    return this.getCachedData(cacheKey, async () => {
+      try {
+        const url = `${this.baseURL}/search/trending`;
+        return await this.makeRequest(url);
+      } catch (error) {
+        console.error('Error en getTrendingCoins:', error);
+        throw error;
       }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Error en getTrendingCoins:', error);
-      throw error;
-    }
+    });
   }
 
   // Buscar monedas con búsqueda inteligente
@@ -98,40 +171,39 @@ class CoinGeckoService {
       }
 
       const searchTerm = query.trim().toLowerCase();
-      const response = await fetch(`${this.baseURL}/search?query=${searchTerm}`);
+      const cacheKey = this.getCacheKey('search', { searchTerm });
       
-      if (!response.ok) {
-        throw new Error('Error en la búsqueda');
-      }
-
-      const data = await response.json();
-      
-      // Filtrar y mejorar los resultados
-      const filteredResults = data.coins?.filter(coin => {
-        const name = coin.name.toLowerCase();
-        const symbol = coin.symbol.toLowerCase();
-        const id = coin.id.toLowerCase();
+      return this.getCachedData(cacheKey, async () => {
+        const url = `${this.baseURL}/search?query=${searchTerm}`;
+        const data = await this.makeRequest(url);
         
-        return (
-          name.includes(searchTerm) ||
-          symbol.includes(searchTerm) ||
-          id.includes(searchTerm) ||
-          name.startsWith(searchTerm) ||
-          symbol.startsWith(searchTerm)
-        );
-      }).slice(0, 10) || [];
+        // Filtrar y mejorar los resultados
+        const filteredResults = data.coins?.filter(coin => {
+          const name = coin.name.toLowerCase();
+          const symbol = coin.symbol.toLowerCase();
+          const id = coin.id.toLowerCase();
+          
+          return (
+            name.includes(searchTerm) ||
+            symbol.includes(searchTerm) ||
+            id.includes(searchTerm) ||
+            name.startsWith(searchTerm) ||
+            symbol.startsWith(searchTerm)
+          );
+        }).slice(0, 10) || [];
 
-      // Si no hay resultados, obtener sugerencias
-      let suggestions = [];
-      if (filteredResults.length === 0) {
-        suggestions = await this.getTopCoinsSuggestions();
-      }
+        // Si no hay resultados, obtener sugerencias
+        let suggestions = [];
+        if (filteredResults.length === 0) {
+          suggestions = await this.getTopCoinsSuggestions();
+        }
 
-      return {
-        results: filteredResults,
-        suggestions: suggestions,
-        query: query
-      };
+        return {
+          results: filteredResults,
+          suggestions: suggestions,
+          query: query
+        };
+      });
     } catch (error) {
       console.error('Error en searchCoinsIntelligent:', error);
       throw error;
@@ -158,13 +230,8 @@ class CoinGeckoService {
   // Buscar monedas
   async searchCoins(query) {
     try {
-      const response = await fetch(`${this.baseURL}/search?query=${query}`);
-      
-      if (!response.ok) {
-        throw new Error('Error en la búsqueda');
-      }
-      
-      return await response.json();
+      const url = `${this.baseURL}/search?query=${query}`;
+      return await this.makeRequest(url);
     } catch (error) {
       console.error('Error en searchCoins:', error);
       throw error;
@@ -264,6 +331,58 @@ class CoinGeckoService {
       return (num / 1e3).toFixed(decimals) + 'K';
     }
     return num.toFixed(decimals);
+  }
+
+  // Limpiar cache manualmente
+  clearCache() {
+    this.cache.clear();
+  }
+
+  // Limpiar cache expirado
+  cleanExpiredCache() {
+    const now = Date.now();
+    for (const [key, value] of this.cache.entries()) {
+      if (now - value.timestamp > this.cacheTimeout) {
+        this.cache.delete(key);
+      }
+    }
+  }
+
+  // Método para cargar datos del dashboard de forma optimizada
+  async loadDashboardData() {
+    try {
+      // Cargar datos críticos primero (con mayor prioridad)
+      const globalStats = await this.getGlobalStats();
+      
+      // Pequeño delay antes del siguiente batch
+      await this.delay(50);
+      
+      // Cargar datos del pie chart y coins en paralelo pero de forma controlada
+      const [pieData, coinsData] = await Promise.all([
+        this.getTopCoinsForPieChart(),
+        this.getCoins(1, 20)
+      ]);
+      
+      // Delay antes del siguiente batch
+      await this.delay(50);
+      
+      // Cargar trending y datos históricos
+      const [trendingData, historicalData] = await Promise.all([
+        this.getTrendingCoins(),
+        this.getCoinHistory('bitcoin', 7)
+      ]);
+
+      return {
+        globalStats,
+        coins: coinsData,
+        trending: trendingData,
+        pieChart: pieData,
+        historical: historicalData
+      };
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+      throw error;
+    }
   }
 }
 
