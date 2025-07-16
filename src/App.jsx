@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import PrivateRoute from './routes/PrivateRoute';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import CoinDetails from './pages/CoinDetails';
 import NotFound from './pages/NotFound';
 import './App.css';
 
@@ -49,6 +50,16 @@ function App() {
               element={
                 <PrivateRoute>
                   <Dashboard />
+                </PrivateRoute>
+              } 
+            />
+            
+            {/* Ruta de detalles de moneda */}
+            <Route 
+              path="/coin/:coinId" 
+              element={
+                <PrivateRoute>
+                  <CoinDetails />
                 </PrivateRoute>
               } 
             />

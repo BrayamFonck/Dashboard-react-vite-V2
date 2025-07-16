@@ -74,13 +74,82 @@ const Dashboard = () => {
     
     try {
       setLoading(true);
-      const searchResults = await coinGeckoService.searchCoins(query);
-      // Aquí podrías implementar la lógica de filtrado
-      console.log('Search results:', searchResults);
+      setError('');
+      const searchResults = await coinGeckoService.searchCoinsIntelligent(query);
+      
+      if (searchResults.results.length > 0) {
+        // Obtener datos detallados de las monedas encontradas
+        const coinIds = searchResults.results.slice(0, 10).map(coin => coin.id);
+        const detailedCoins = await Promise.all(
+          coinIds.map(id => coinGeckoService.getCoinById(id).catch(() => null))
+        );
+        
+        // Filtrar resultados válidos y formatear para la tabla
+        const validCoins = detailedCoins.filter(coin => coin !== null).map(coin => ({
+          id: coin.id,
+          name: coin.name,
+          symbol: coin.symbol,
+          image: coin.image.small,
+          current_price: coin.market_data.current_price.usd,
+          market_cap: coin.market_data.market_cap.usd,
+          market_cap_rank: coin.market_cap_rank,
+          price_change_percentage_24h: coin.market_data.price_change_percentage_24h,
+          price_change_percentage_7d_in_currency: coin.market_data.price_change_percentage_7d,
+          total_volume: coin.market_data.total_volume.usd,
+          sparkline_in_7d: { price: [] } // Placeholder para sparkline
+        }));
+        
+        setCoins(validCoins);
+      }
     } catch (err) {
-      setError('Error en la búsqueda');
+      console.error('Error en búsqueda:', err);
+      setError('Error en la búsqueda. Por favor, intenta de nuevo.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCoinSelectFromSearch = async (coin) => {
+    try {
+      // Actualizar la moneda seleccionada para el gráfico histórico
+      setSelectedCoin(coin.id);
+      
+      // Obtener datos históricos de la moneda seleccionada
+      const historicalData = await coinGeckoService.getCoinHistory(coin.id, 7);
+      const processedData = historicalData.prices.map(([timestamp, price]) => ({
+        timestamp,
+        price: price.toFixed(2)
+      }));
+      setHistoricalData(processedData);
+      
+      // Opcional: También actualizar la lista de monedas con la seleccionada
+      const coinDetails = await coinGeckoService.getCoinById(coin.id);
+      const formattedCoin = {
+        id: coinDetails.id,
+        name: coinDetails.name,
+        symbol: coinDetails.symbol,
+        image: coinDetails.image.small,
+        current_price: coinDetails.market_data.current_price.usd,
+        market_cap: coinDetails.market_data.market_cap.usd,
+        market_cap_rank: coinDetails.market_cap_rank,
+        price_change_percentage_24h: coinDetails.market_data.price_change_percentage_24h,
+        price_change_percentage_7d_in_currency: coinDetails.market_data.price_change_percentage_7d,
+        total_volume: coinDetails.market_data.total_volume.usd,
+        sparkline_in_7d: { price: [] }
+      };
+      
+      // Agregar la moneda seleccionada al inicio de la lista si no está presente
+      setCoins(prevCoins => {
+        const coinExists = prevCoins.some(c => c.id === coin.id);
+        if (!coinExists) {
+          return [formattedCoin, ...prevCoins.slice(0, 19)]; // Mantener máximo 20 monedas
+        }
+        return prevCoins;
+      });
+      
+    } catch (err) {
+      console.error('Error al seleccionar moneda:', err);
+      setError('Error al cargar datos de la moneda seleccionada');
     }
   };
 

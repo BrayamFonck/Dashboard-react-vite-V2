@@ -1,7 +1,13 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { TrendingUp, TrendingDown, Star, ExternalLink } from 'lucide-react';
 
 const CoinTable = ({ coins = [], loading = false }) => {
+  const navigate = useNavigate();
+
+  const handleCoinClick = (coinId) => {
+    navigate(`/coin/${coinId}`);
+  };
   if (loading) {
     return (
       <div 
@@ -64,7 +70,8 @@ const CoinTable = ({ coins = [], loading = false }) => {
         {coins.slice(0, 10).map((coin, index) => (
           <div
             key={coin.id}
-            className="p-4 border-b border-gray-100 last:border-b-0"
+            onClick={() => handleCoinClick(coin.id)}
+            className="p-4 border-b border-gray-100 last:border-b-0 cursor-pointer hover:bg-gray-50 transition-colors"
             role="article"
             aria-labelledby={`coin-${coin.id}-name`}
           >
@@ -95,6 +102,7 @@ const CoinTable = ({ coins = [], loading = false }) => {
               </div>
               <button 
                 className="p-1 text-gray-400 hover:text-yellow-500 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 rounded"
+                onClick={(e) => e.stopPropagation()}
                 aria-label={`Agregar ${coin.name} a favoritos`}
               >
                 <Star className="w-4 h-4" />
@@ -209,7 +217,8 @@ const CoinTable = ({ coins = [], loading = false }) => {
             {coins.map((coin, index) => (
               <tr 
                 key={coin.id} 
-                className="hover:bg-gray-50 transition-colors duration-150 focus-within:bg-gray-50"
+                onClick={() => handleCoinClick(coin.id)}
+                className="hover:bg-gray-50 transition-colors duration-150 focus-within:bg-gray-50 cursor-pointer"
                 role="row"
               >
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -289,14 +298,18 @@ const CoinTable = ({ coins = [], loading = false }) => {
                   ${formatNumber(coin.total_volume)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2">              <button 
+                onClick={(e) => e.stopPropagation()}
+                className="p-1 text-gray-400 hover:text-yellow-500 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 rounded"
+                aria-label={`Agregar ${coin.name} a favoritos`}
+              >
+                <Star className="w-4 h-4" />
+              </button>
                     <button 
-                      className="p-1 text-gray-400 hover:text-yellow-500 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 rounded"
-                      aria-label={`Agregar ${coin.name} a favoritos`}
-                    >
-                      <Star className="w-4 h-4" />
-                    </button>
-                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCoinClick(coin.id);
+                      }}
                       className="p-1 text-gray-400 hover:text-blue-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
                       aria-label={`Ver detalles de ${coin.name}`}
                     >

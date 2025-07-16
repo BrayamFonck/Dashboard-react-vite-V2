@@ -90,6 +90,71 @@ class CoinGeckoService {
     }
   }
 
+  // Buscar monedas con búsqueda inteligente
+  async searchCoinsIntelligent(query) {
+    try {
+      if (!query || query.trim().length === 0) {
+        return { results: [], suggestions: [] };
+      }
+
+      const searchTerm = query.trim().toLowerCase();
+      const response = await fetch(`${this.baseURL}/search?query=${searchTerm}`);
+      
+      if (!response.ok) {
+        throw new Error('Error en la búsqueda');
+      }
+
+      const data = await response.json();
+      
+      // Filtrar y mejorar los resultados
+      const filteredResults = data.coins?.filter(coin => {
+        const name = coin.name.toLowerCase();
+        const symbol = coin.symbol.toLowerCase();
+        const id = coin.id.toLowerCase();
+        
+        return (
+          name.includes(searchTerm) ||
+          symbol.includes(searchTerm) ||
+          id.includes(searchTerm) ||
+          name.startsWith(searchTerm) ||
+          symbol.startsWith(searchTerm)
+        );
+      }).slice(0, 10) || [];
+
+      // Si no hay resultados, obtener sugerencias
+      let suggestions = [];
+      if (filteredResults.length === 0) {
+        suggestions = await this.getTopCoinsSuggestions();
+      }
+
+      return {
+        results: filteredResults,
+        suggestions: suggestions,
+        query: query
+      };
+    } catch (error) {
+      console.error('Error en searchCoinsIntelligent:', error);
+      throw error;
+    }
+  }
+
+  // Obtener las 10 monedas más famosas como sugerencias
+  async getTopCoinsSuggestions() {
+    try {
+      const topCoins = await this.getCoins(1, 10);
+      return topCoins.map(coin => ({
+        id: coin.id,
+        name: coin.name,
+        symbol: coin.symbol.toUpperCase(),
+        thumb: coin.image,
+        market_cap_rank: coin.market_cap_rank
+      }));
+    } catch (error) {
+      console.error('Error en getTopCoinsSuggestions:', error);
+      return [];
+    }
+  }
+
   // Buscar monedas
   async searchCoins(query) {
     try {
