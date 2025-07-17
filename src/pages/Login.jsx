@@ -316,7 +316,7 @@ const Login = () => {
                 <button
                   type="button"
                   onClick={toggleMode}
-                  className="ml-2 font-semibold text-orange-500 hover:text-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 rounded transition-colors"
+                  className="ml-2 font-semibold text-orange-700 hover:text-orange-800 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 rounded transition-colors"
                   aria-describedby="toggle-help"
                 >
                   {isLogin ? 'Regístrate es gratis' : 'Inicia sesión'}

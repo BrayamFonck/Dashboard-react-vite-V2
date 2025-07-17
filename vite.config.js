@@ -8,6 +8,6 @@ export default defineConfig({
   plugins: [react(), tailwindcss(), viteCompression()],
   build: {
     minify: 'esbuild'
-  }
-  // base: '/Dashboard-react-vite-V2/',
+  },
+  base: 'https://BrayamFonck.github.io/Dashboard-react-vite-V2/',
 })
