@@ -125,7 +125,7 @@ const Login = () => {
       <div className="absolute top-0 left-0 w-full h-full" aria-hidden="true">
         <div className="absolute top-10 left-10 sm:top-20 sm:left-20 w-24 h-24 sm:w-32 sm:h-32 bg-white bg-opacity-10 rounded-full blur-xl"></div>
         <div className="absolute bottom-16 right-8 sm:bottom-32 sm:right-16 w-32 h-32 sm:w-48 sm:h-48 bg-white bg-opacity-10 rounded-full blur-xl"></div>
-        <div className="absolute top-1/2 left-1/4 w-16 h-16 sm:w-24 sm:h-24 bg-yellow-300 bg-opacity-20 rounded-full blur-lg"></div>
+        {/* <div className="absolute top-1/2 left-1/4 w-16 h-16 sm:w-24 sm:h-24 bg-yellow-300 bg-opacity-20 rounded-full blur-lg"></div> */}
       </div>
 
       <div className="max-w-7xl w-full flex items-center justify-center relative z-10">
@@ -138,7 +138,7 @@ const Login = () => {
                 <span className="block text-yellow-300">Criptomonedas</span>
                 <span className="block">en Tiempo Real</span>
               </h1>
-              <p className="text-sm sm:text-base lg:text-lg text-orange-100 leading-relaxed max-w-md mx-auto lg:mx-0">
+              <p className="text-sm sm:text-base lg:text-lg leading-relaxed max-w-md mx-auto lg:mx-0">
                 Monitorea, analiza y gestiona tus inversiones en criptomonedas con 
                 datos actualizados en tiempo real. La plataforma más completa para 
                 traders y entusiastas de las criptomonedas.
