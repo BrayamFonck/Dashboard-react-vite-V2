@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import PrivateRoute from './routes/PrivateRoute';
+import { useBfcacheOptimization } from './hooks/useBfcacheOptimization';
 import './App.css';
 
 // Importaciones dinámicas con React.lazy para code splitting
@@ -44,6 +45,9 @@ const RootRedirect = () => {
 };
 
 function App() {
+  // Hook para optimizar el back/forward cache
+  useBfcacheOptimization();
+  
   return (
     <AuthProvider>
       <Router>

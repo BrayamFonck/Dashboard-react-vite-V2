@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useSafeInterval } from '../hooks/useSafeInterval';
 import Navbar from '../components/Navbar';
 import StatCard from '../components/StatCard';
 import CryptoPieChart from '../components/CryptoPieChart';
@@ -28,18 +29,14 @@ const Dashboard = () => {
   const [historicalTimeRange, setHistoricalTimeRange] = useState(7); // Nuevo estado para el rango de tiempo
   const [loadingHistorical, setLoadingHistorical] = useState(false); // Estado para carga de datos históricos
 
+  // Usar hook seguro para limpiar cache cada 5 minutos
+  useSafeInterval(() => {
+    coinGeckoService.cleanExpiredCache();
+  }, 5 * 60 * 1000); // 5 minutos
+
   // Cargar datos iniciales
   useEffect(() => {
     loadInitialData();
-    
-    // Limpiar cache expirado cada 5 minutos
-    const cacheCleanInterval = setInterval(() => {
-      coinGeckoService.cleanExpiredCache();
-    }, 5 * 60 * 1000); // 5 minutos
-
-    return () => {
-      clearInterval(cacheCleanInterval);
-    };
   }, []);
 
   // Recargar datos históricos cuando cambie el rango de tiempo o la moneda seleccionada

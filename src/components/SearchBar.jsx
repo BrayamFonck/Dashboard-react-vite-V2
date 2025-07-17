@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSafeTimeout } from '../hooks/useSafeTimeout';
 import coinGeckoService from '../services/coingeckoService';
 
 const SearchBar = ({ onSearch, onCoinSelect, placeholder = "Buscar criptomonedas..." }) => {
   const navigate = useNavigate();
+  const { setSafeTimeout, clearSafeTimeout } = useSafeTimeout();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
@@ -26,14 +28,14 @@ const SearchBar = ({ onSearch, onCoinSelect, placeholder = "Buscar criptomonedas
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Búsqueda con debounce
+  // Búsqueda con debounce usando timeout seguro
   useEffect(() => {
     if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
+      clearSafeTimeout(timeoutRef.current);
     }
 
     if (searchTerm.trim().length > 0) {
-      timeoutRef.current = setTimeout(() => {
+      timeoutRef.current = setSafeTimeout(() => {
         performSearch(searchTerm);
       }, 300);
     } else {
@@ -45,10 +47,10 @@ const SearchBar = ({ onSearch, onCoinSelect, placeholder = "Buscar criptomonedas
 
     return () => {
       if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+        clearSafeTimeout(timeoutRef.current);
       }
     };
-  }, [searchTerm]);
+  }, [searchTerm, setSafeTimeout, clearSafeTimeout]);
 
   const performSearch = async (query) => {
     try {
