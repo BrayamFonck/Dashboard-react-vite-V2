@@ -1,0 +1,38 @@
+# robots.txt para Dashboard de Criptomonedas
+# Permite el acceso completo a todos los bots de búsqueda
+
+User-agent: *
+Allow: /
+
+# Sitemap (opcional - puedes agregarlo más tarde si implementas uno)
+# Sitemap: https://tu-dominio.com/sitemap.xml
+
+# Optimizaciones específicas para bots de búsqueda
+# Permitir acceso a recursos importantes
+Allow: /assets/
+Allow: /*.css
+Allow: /*.js
+Allow: /*.ico
+Allow: /*.png
+Allow: /*.jpg
+Allow: /*.jpeg
+Allow: /*.gif
+Allow: /*.svg
+
+# Crawl-delay (opcional) - evita sobrecargar el servidor
+# Crawl-delay: 1
+
+# Directrices específicas para motores de búsqueda importantes
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+# Bloquear acceso a archivos de desarrollo/configuración (si los hubiera)
+Disallow: /src/
+Disallow: /*.map
+Disallow: /node_modules/
