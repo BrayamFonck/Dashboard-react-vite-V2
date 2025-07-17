@@ -319,7 +319,7 @@ const Login = () => {
                   className="ml-2 font-semibold text-orange-500 hover:text-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 rounded transition-colors"
                   aria-describedby="toggle-help"
                 >
-                  {isLogin ? 'Regístrate gratis' : 'Inicia sesión'}
+                  {isLogin ? 'Regístrate es gratis' : 'Inicia sesión'}
                 </button>
               </p>
             </div>
