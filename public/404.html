@@ -10,16 +10,17 @@
       content="Un dashboard interactivo para seguir en tiempo real el precio y las tendencias de las principales criptomonedas como Bitcoin, Ethereum y más." 
     />
 
-    <!-- Script para restaurar rutas desde redirección del 404 -->
+    <!-- Script para redirigir rutas 404 a index.html para React Router -->
     <script type="text/javascript">
-      // Lee la ruta de la redirección del 404 y la restaura
-      const params = new URLSearchParams(window.location.search);
-      const path = params.get('p');
-      if (path) {
-        window.history.replaceState(null, null, window.location.pathname.slice(0, -1) + path.replace(/~and~/g, '&'));
+      // Redirige las rutas 404 a index.html para que React Router las maneje
+      const path = window.location.pathname;
+      const repoName = '/Dashboard-react-vite-V2/';
+      if (path.startsWith(repoName)) {
+        const redirect = window.location.href.replace(path, repoName + '?p=' + path.slice(repoName.length).replace(/&/g, '~and~'));
+        window.location.href = redirect;
       }
     </script>
-    <!-- Fin del script de restauración -->
+    <!-- Fin del script de redirección -->
 
   </head>
   <body>

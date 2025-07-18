@@ -9,5 +9,5 @@ export default defineConfig({
   build: {
     minify: 'esbuild'
   },
-  base: 'https://BrayamFonck.github.io/Dashboard-react-vite-V2/',
+  base: '/Dashboard-react-vite-V2/',
 })
