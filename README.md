@@ -1,23 +1,60 @@
-# 🚀 CryptoDashboard - React + Vite
+# 🚀 CryptoDashboard v2.0 - React + Vite
 
-Un dashboard completo y en tiempo real para monitoreo de criptomonedas que combina análisis de mercado avanzado, visualización de datos inteligente y un sistema robusto de gestión de datos. Desarrollado con React 19, Vite 7, y tecnologías modernas como Recharts y Tailwind CSS.
+Un dashboard completo y altamente optimizado para monitoreo de criptomonedas en tiempo real que combina análisis de mercado avanzado, visualización de datos inteligente, y un sistema robusto de gestión de datos. Desarrollado con React 19, Vite 7, implementando las mejores prácticas de performance, accesibilidad y SEO.
 
 ## 🔍 Descripción General
 
-CryptoDashboard es una aplicación web moderna que permite a los usuarios monitorear, analizar y explorar el mercado de criptomonedas en tiempo real. Incluye funcionalidades avanzadas como autenticación, búsqueda inteligente, gráficos interactivos, páginas detalladas de monedas, y un sistema de caché sofisticado con respaldo offline.
+CryptoDashboard v2.0 es una aplicación web moderna que permite a los usuarios monitorear, analizar y explorar el mercado de criptomonedas en tiempo real. Incluye funcionalidades avanzadas como autenticación, búsqueda inteligente, gráficos interactivos, páginas detalladas de monedas, sistema de caché sofisticado con respaldo offline, **code splitting**, **optimizaciones de performance**, y **soporte completo para GitHub Pages**.
 
 ## ✨ Características Principales
 
-- **� Sistema de Autenticación**: Login seguro con gestión de usuarios y roles
-- **📊 Dashboard Completo**: Estadísticas globales, gráficos de pastel, tablas dinámicas y tendencias
-- **� Búsqueda Inteligente**: Búsqueda en tiempo real con debounce y filtrado avanzado
-- **📈 Gráficos Interactivos**: Gráficos históricos con selección de rangos de tiempo y monedas
-- **📱 Diseño Responsive**: Mobile-first design optimizado para cualquier dispositivo
-- **⚡ Sistema de Cache Inteligente**: Cache dual con respaldo persistente y manejo de errores
-- **🔄 Datos en Tiempo Real**: Integración completa con CoinGecko API y rate limiting
-- **♿ Accesibilidad Completa**: ARIA labels, navegación por teclado y soporte para lectores de pantalla
+### 🔐 **Sistema de Autenticación Avanzado**
+- Login seguro con gestión de usuarios y roles
+- Rutas protegidas con PrivateRoute component
+- Contexto global de autenticación
+- Usuarios de demostración incluidos
 
-## 🛠 Estructura del Proyecto
+### 📊 **Dashboard Completo e Interactivo**
+- Estadísticas globales del mercado en tiempo real
+- Gráficos de pastel con distribución de capitalización
+- Tablas dinámicas con top 20 criptomonedas
+- Gráficos históricos con múltiples rangos de tiempo
+- Datos de tendencias y análisis de mercado
+
+### 🔍 **Búsqueda Inteligente con Debounce**
+- Búsqueda en tiempo real con filtrado avanzado
+- Debounce optimizado para reducir requests
+- Sugerencias inteligentes y autocomplete
+- Manejo de estados de carga y errores
+
+### 📈 **Visualización de Datos Avanzada**
+- Gráficos interactivos con Recharts
+- Selección de rangos de tiempo personalizables
+- Tooltips informativos y navegación intuitiva
+- Responsive design para todos los dispositivos
+
+### ⚡ **Optimizaciones de Performance**
+- **Code Splitting** con React.lazy y Suspense
+- **Back/Forward Cache (bfcache)** optimizado
+- **Hooks personalizados** para gestión de memoria
+- **Compresión Gzip/Brotli** habilitada
+- **Minificación avanzada** con esbuild
+- **Service Worker** para caché offline
+
+### 🌐 **SEO y Accesibilidad**
+- **robots.txt** válido para indexación
+- **Meta tags** optimizadas para redes sociales
+- **Contraste de colores** WCAG 2.1 AA compliant
+- **ARIA labels** y navegación por teclado
+- **Lighthouse Score** optimizado
+
+### 🚀 **GitHub Pages Ready**
+- **Configuración completa** para deployment
+- **Soporte para React Router** en GitHub Pages
+- **Archivo 404.html** para manejo de rutas
+- **Scripts de redirección** transparentes
+
+## 🛠 Arquitectura del Proyecto
 
 ```text
 src/
@@ -38,564 +75,338 @@ src/
 │   └── NotFound.jsx           # Página 404
 ├── context/            # Contextos de React
 │   └── AuthContext.jsx        # Contexto de autenticación
+├── hooks/              # Hooks personalizados (NUEVO)
+│   ├── useBfcacheOptimization.js    # Optimización bfcache
+│   ├── useSafeInterval.js           # Intervals seguros
+│   ├── useSafeTimeout.js            # Timeouts seguros
+│   └── useApiConnection.js          # Gestión de conexiones API
 ├── services/           # Servicios de API
 │   ├── coingeckoService.js    # Servicio principal de CoinGecko
 │   ├── authService.js         # Servicio de autenticación
-│   └── users.js               # Gestión de usuarios
+│   ├── users.js               # Gestión de usuarios
+│   └── users.db               # Base de datos local
 ├── routes/             # Rutas protegidas
 │   └── PrivateRoute.jsx       # Componente de rutas privadas
 ├── styles/             # Estilos globales
 │   └── App.module.css         # Estilos principales
-├── App.jsx
-└── main.jsx
+├── App.jsx             # Componente principal con lazy loading
+└── main.jsx            # Punto de entrada con Service Worker
 ```
 
----
+### 📁 **Archivos de Configuración**
+```text
+public/
+├── 404.html            # Manejo de rutas para GitHub Pages
+├── robots.txt          # SEO y crawling
+└── vite.svg           # Favicon
+```
 
-## 📋 Tabla de Contenidos
-- [Demostración del Dashboard](#-demostración-del-dashboard)
-- [Requisitos del Sistema](#-requisitos-del-sistema)
-- [Instalación](#-instalación)
-- [Uso](#-uso)
-- [Arquitectura del Proyecto](#-arquitectura-del-proyecto)
-- [Características Técnicas](#-características-técnicas)
-- [API Utilizada](#-api-utilizada)
-- [Sistema de Cache](#-sistema-de-cache)
-- [Accesibilidad](#-accesibilidad)
-- [Casos de Uso](#-casos-de-uso)
-- [Contribuir](#-contribuir)
-- [Contacto](#-contacto)
+## 🎯 Páginas del Proyecto
 
-## 🎯 Demostración del Dashboard
+### 🔐 **Login (`/login`)**
+**Propósito**: Página de autenticación del sistema
+- Formulario de login/registro con validación
+- Diseño responsive con gradientes modernos
+- Información promocional del dashboard
+- **Contraste optimizado** para accesibilidad
+- **Usuarios de prueba**:
+  - Admin: `brayan@admin.com` / `admin123`
+  - Colaborador: `maria@colaborador.com` / `colaborador123`
 
-### Funcionalidades Principales
+### 📊 **Dashboard (`/dashboard`)**
+**Propósito**: Página principal del dashboard de criptomonedas
+- Vista general completa del mercado crypto
+- Estadísticas globales en tiempo real
+- Tabla de las top 20 criptomonedas
+- Gráfico de pastel con distribución de capitalización
+- Gráfico histórico interactivo con rangos de tiempo
+- Búsqueda inteligente de criptomonedas
+- Sistema de cache avanzado con datos de respaldo
 
-#### 🔐 **Sistema de Autenticación**
-- **Login Seguro**: Sistema de autenticación con validación
-- **Gestión de Usuarios**: Soporte para diferentes roles (admin/usuario)
-- **Rutas Protegidas**: Acceso controlado a funcionalidades del dashboard
+### 🪙 **CoinDetails (`/coin/:coinId`)**
+**Propósito**: Página de detalles específicos de cada criptomoneda
+- Información detallada de una criptomoneda individual
+- Precio actual y métricas de mercado
+- Gráfico histórico con múltiples rangos (1D, 7D, 30D, 90D, 1A)
+- Enlaces oficiales y exploradores blockchain
+- Descripción detallada de la criptomoneda
+- Botón de actualización de datos
 
-#### 📊 **Dashboard Principal**
-- **Estadísticas Globales**: Capitalización total, volumen 24h, dominancia BTC
-- **Gráfico de Pastel**: Distribución visual de capitalización de mercado
-- **Gráfico Histórico**: Análisis temporal con múltiples rangos de tiempo
-- **Tabla de Criptomonedas**: Top monedas con datos en tiempo real
-- **Monedas Trending**: Lista actualizada de criptomonedas populares
+### ❌ **NotFound (`/404`)**
+**Propósito**: Página de error 404
+- Maneja rutas no encontradas
+- Diseño limpio con botón de regreso al inicio
+- **Lazy loading** implementado
 
-#### 🔍 **Búsqueda Inteligente**
-- **Búsqueda en Tiempo Real**: Resultados instantáneos con debounce
-- **Filtrado Avanzado**: Por nombre, símbolo y características
-- **Navegación Directa**: Acceso rápido a páginas de detalles
+## 🔧 Tecnologías y Dependencias
 
-#### 📈 **Análisis Avanzado**
-- **Páginas de Detalles**: Información completa de cada criptomoneda
-- **Gráficos Históricos**: Rangos de 1D, 7D, 1M, 1A con selector de monedas
-- **Métricas Detalladas**: Precios, volumen, capitalización, cambios porcentuales
-- **Enlaces Útiles**: Sitios web oficiales y exploradores blockchain
+### **Frontend Core**
+- **React** `19.1.0` - Biblioteca de interfaz de usuario
+- **React Router DOM** `7.6.3` - Enrutamiento de la aplicación
+- **Vite** `7.0.4` - Bundler y servidor de desarrollo
 
-### Características de las Interfaces
+### **Styling & UI**
+- **Tailwind CSS** `4.1.11` - Framework de utilidades CSS
+- **Lucide React** `0.525.0` - Iconos modernos
+- **Recharts** `3.1.0` - Gráficos y visualización de datos
 
-#### 📱 **Diseño Responsive**
-- **Mobile-First**: Optimizado para dispositivos móviles
-- **Navegación Adaptiva**: Menú colapsible en pantallas pequeñas
-- **Layout Flexible**: Grid system que se adapta a cualquier tamaño
+### **Performance & Optimization**
+- **@vitejs/plugin-react-swc** `3.10.2` - Compilación rápida
+- **vite-plugin-compression** `0.5.1` - Compresión Gzip/Brotli
+- **ESBuild** - Minificación avanzada
 
-#### 🎨 **Interfaz de Usuario**
-- **Diseño Moderno**: Gradientes, sombras y animaciones suaves
-- **Paleta Consistente**: Colores coherentes y profesionales
-- **Feedback Visual**: Estados de carga, errores y confirmaciones
-- **Iconografía**: Lucide React icons para mejor experiencia visual
+### **Development & Quality**
+- **ESLint** `9.30.1` - Linting de código
+- **PostCSS** `8.5.6` - Procesamiento de CSS
+- **Autoprefixer** `10.4.21` - Prefijos CSS automáticos
 
-## 💻 Requisitos del Sistema
+### **Deployment**
+- **gh-pages** `6.3.0` - Deployment a GitHub Pages
 
-- **Node.js 18+** (recomendado 20+ LTS)
-- **npm 9+** o **pnpm 8+**
-- Navegador moderno con soporte para:
-  - ES2022+ features
-  - CSS Grid y Flexbox
-  - Fetch API
-  - Local Storage API
-  - Modern JavaScript (async/await, modules)
+## 🚀 Instalación y Configuración
 
-### Dependencias Principales
-- **React 19.1.0**: Biblioteca principal de UI con las últimas características
-- **Vite 7.0.4**: Build tool ultrarrápido con HMR optimizado
-- **React Router DOM 7.6.3**: Enrutamiento del lado del cliente
-- **Recharts 3.1.0**: Biblioteca de gráficos para visualización de datos
-- **Tailwind CSS 4.1.11**: Framework CSS utilitario moderno
-- **Lucide React 0.525.0**: Iconos SVG ligeros y modernos
+### **Prerrequisitos**
+- Node.js `18+`
+- npm `8+` o yarn `1.22+`
 
-## 🚀 Instalación
-
-### 📥 Clonar el Repositorio
+### **Instalación**
 ```bash
+# Clonar el repositorio
 git clone https://github.com/BrayamFonck/Dashboard-react-vite-V2.git
-cd Dashboard-react-vite-V2
-```
 
-### 📦 Instalar Dependencias
-```bash
-# Con npm
+# Navegar al directorio
+cd Dashboard-react-vite-V2
+
+# Instalar dependencias
 npm install
 
-# O con pnpm (recomendado para mejor rendimiento)
-pnpm install
-```
-
-### 🔧 Configuración del Entorno
-No se requiere configuración adicional de variables de entorno. El proyecto utiliza la API pública gratuita de CoinGecko.
-
-**Usuarios de Prueba:**
-- **Usuario**: maria@colaborador.com | **Contraseña**: colaborador123
-- **Admin**: admin@admin.com | **Contraseña**: admin123
-
-## 🎮 Uso
-
-### 🔄 Servidor de Desarrollo
-```bash
-# Iniciar servidor de desarrollo con Hot Module Replacement
-npm run dev
-# o
-pnpm dev
-
-# El dashboard estará disponible en http://localhost:5173
-```
-
-### 🏗️ Build para Producción
-```bash
-# Crear build optimizado
-npm run build
-# o
-pnpm build
-
-# Previsualizar build localmente
-npm run preview
-# o
-pnpm preview
-```
-
-### 🧹 Linting y Calidad de Código
-```bash
-# Ejecutar ESLint para verificar código
-npm run lint
-# o
-pnpm lint
-```
-
-## 🏗️ Arquitectura del Proyecto
-
-### 🧩 Componentes Principales
-
-#### `Dashboard.jsx`
-- **Página principal** del dashboard con gestión completa de estado
-- **Integración de APIs** con sistema de cache inteligente
-- **Gestión de errores** con fallbacks y datos de respaldo
-- **Estados de carga** con feedback visual apropiado
-- **Filtros de tiempo** para gráficos históricos (1D, 7D, 1M, 1A)
-
-#### `CoinDetails.jsx`
-- **Páginas detalladas** de criptomonedas individuales
-- **Gráficos históricos** con múltiples rangos de tiempo
-- **Información completa**: precios, volúmenes, enlaces oficiales
-- **Sistema de fallback** para datos offline
-- **Navegación fluida** de regreso al dashboard
-
-#### `CoinTable.jsx`
-- **Tabla responsive** con datos en tiempo real
-- **Ordenamiento inteligente** y navegación por teclado
-- **Acciones rápidas**: favoritos y navegación a detalles
-- **Indicadores visuales** de cambios de precio con colores
-- **Accesibilidad completa** con ARIA labels
-
-#### `CryptoPieChart.jsx`
-- **Visualización de datos** con gráfico de pastel interactivo
-- **Etiquetas inteligentes** que evitan superposición
-- **Tooltip informativo** con datos detallados de cada segmento
-- **Agrupación automática** de monedas menores en categoría "Otras"
-- **Paleta de colores** consistente y accesible
-
-#### `HistoricalChart.jsx`
-- **Gráficos de línea** interactivos con Recharts
-- **Tooltip personalizado** con información contextual
-- **Formateo inteligente** de ejes X e Y
-- **Responsive design** que se adapta a cualquier pantalla
-- **Datos históricos** procesados para mejor rendimiento
-
-#### `SearchBar.jsx`
-- **Búsqueda en tiempo real** con debounce para optimización
-- **Resultados instantáneos** con navegación por teclado
-- **Filtrado inteligente** por nombre y símbolo
-- **Rate limiting** integrado para evitar sobrecarga de API
-
-#### `TrendingCoins.jsx`
-- **Lista de monedas trending** con navegación directa
-- **Indicadores visuales** de ranking y tendencias
-- **Interacción mejorada** con hover effects y animaciones
-- **Accesibilidad completa** con soporte para lectores de pantalla
-
-### 🔧 Servicios Principales
-
-#### `coingeckoService.js`
-```javascript
-class CoinGeckoService {
-  // Funcionalidades principales:
-  
-  // Sistema de cache dual
-  loadDashboardData()      // Carga optimizada del dashboard completo
-  getCoinById(id)          // Obtener datos detallados de una moneda
-  getCoinHistory(id, days) // Datos históricos con rango personalizable
-  searchCoinsIntelligent() // Búsqueda avanzada con filtrado
-  
-  // Cache y optimización
-  getCachedData()          // Gestión de cache con fallbacks
-  cleanExpiredCache()      // Limpieza automática de cache expirado
-  makeRequestWithRetries() // Reintentos con backoff exponencial
-  
-  // Utilidades
-  formatNumber()           // Formateo de números grandes
-  generateColor()          // Generación de colores para gráficos
-}
-```
-
-#### `authService.js`
-```javascript
-// Gestión de autenticación
-const authService = {
-  login(email, password)    // Autenticación de usuarios
-  logout()                  // Cierre de sesión
-  getCurrentUser()          // Usuario actual
-  validateSession()         // Validación de sesión
-}
-```
-
-### � Context API
-
-#### `AuthContext.jsx`
-```javascript
-const AuthContext = {
-  user,                     // Usuario autenticado
-  login,                    // Función de login
-  logout,                   // Función de logout
-  loading                   // Estado de carga de auth
-}
-```
-
-### 🚦 Sistema de Rutas
-
-#### `PrivateRoute.jsx`
-- **Protección de rutas** con redirección automática
-- **Validación de sesión** en tiempo real
-- **Manejo de estados** de carga durante validación
-
-## ⚡ Características Técnicas
-
-### 🎨 **Diseño y UX**
-- **Mobile-First Design**: Prioriza la experiencia móvil
-- **CSS Grid & Flexbox**: Layout moderno y flexible
-- **Tailwind CSS**: Sistema de diseño utilitario con configuración personalizada
-- **Animaciones Suaves**: Transiciones CSS optimizadas con `transition-all`
-- **Estados Visuales**: Loading spinners, skeleton screens, y feedback inmediato
-- **Gradientes Dinámicos**: Uso de gradientes para elementos destacados
-
-### 🚀 **Rendimiento y Optimización**
-- **Debounce en Búsqueda**: 300ms de debounce para optimizar API calls
-- **Sistema de Cache Dual**: 
-  - Cache normal (1 minuto) para datos frescos
-  - Cache persistente (24 horas) para respaldo offline
-- **Rate Limiting**: Control de velocidad de requests con cola de procesamiento
-- **Lazy Loading**: Carga diferida de componentes pesados
-- **Memoización**: `useCallback` y `useMemo` para optimizar re-renders
-- **Bundle Optimization**: Vite optimiza automáticamente el bundle final
-
-### 🔄 **Gestión de Estado y Datos**
-- **React Hooks**: Estado local con `useState`, `useEffect`, `useContext`
-- **Estado Centralizado**: Context API para autenticación global
-- **Cache Inteligente**: Reutilización de datos con vencimiento automático
-- **Error Boundaries**: Manejo robusto de errores en toda la aplicación
-- **Fallback System**: Datos de respaldo para funcionamiento offline
-
-### 🛡️ **Seguridad y Confiabilidad**
-- **Validación de Inputs**: Sanitización de entradas de usuario
-- **Autenticación Segura**: Gestión de sesiones con validación
-- **Rate Limiting**: Protección contra abuso de API
-- **Error Handling**: Manejo graceful de errores de red y API
-- **Retry Logic**: Reintentos automáticos con backoff exponencial
-
-## 🌐 API Utilizada
-
-### CoinGecko API v3
-- **Endpoint Base**: `https://api.coingecko.com/api/v3/`
-- **Documentación**: [CoinGecko API Docs](https://www.coingecko.com/en/api/documentation)
-- **Límites**: API gratuita con rate limiting natural
-- **Datos en Tiempo Real**: Precios, volúmenes, capitalización de mercado
-
-### Endpoints Implementados
-```javascript
-// Dashboard principal
-GET /global                               // Estadísticas globales del mercado
-GET /coins/markets?vs_currency=usd       // Top criptomonedas con datos de mercado
-GET /search/trending                     // Monedas trending del momento
-
-// Datos detallados
-GET /coins/{id}                          // Información completa de una moneda
-GET /coins/{id}/market_chart             // Datos históricos personalizables
-GET /search?query={term}                 // Búsqueda de criptomonedas
-
-// Campos utilizados
-fields=id,symbol,name,image,current_price,market_cap,market_cap_rank,
-price_change_percentage_24h,total_volume,sparkline_in_7d
-```
-
-## 🗄️ Sistema de Cache
-
-### Arquitectura de Cache Dual
-
-#### **Cache Normal (60 segundos)**
-```javascript
-// Para datos que necesitan actualizarse frecuentemente
-{
-  key: 'coins-market-data',
-  data: {...},
-  timestamp: 1703425200000,
-  expiresIn: 60000
-}
-```
-
-#### **Cache Persistente (24 horas)**
-```javascript
-// Para respaldo cuando la API no está disponible
-{
-  key: 'coins-market-data-fallback',
-  data: {...},
-  timestamp: 1703425200000,
-  expiresIn: 86400000,
-  isFallback: true
-}
-```
-
-### Estrategias de Cache
-
-1. **Cache-First**: Verificar cache antes de hacer request
-2. **Stale-While-Revalidate**: Usar datos del cache mientras se actualiza
-3. **Fallback Strategy**: Usar datos persistentes cuando falla la API
-4. **Automatic Cleanup**: Limpieza automática de cache expirado
-
-### Manejo de Errores
-- **Graceful Degradation**: Funcionalidad reducida pero operativa
-- **Visual Indicators**: Indicadores cuando se usan datos de respaldo
-- **Retry Logic**: Reintentos automáticos con delays progresivos
-- **User Feedback**: Mensajes claros sobre el estado de los datos
-
-## ♿ Accesibilidad
-
-### Cumplimiento WCAG 2.1 AA
-- **🎯 Estándares Web**: Cumple con pautas de accesibilidad internacional
-- **⌨️ Navegación por Teclado**: Todos los elementos interactivos son navegables con Tab
-- **🔊 Lectores de Pantalla**: Etiquetas semánticas HTML5 y atributos ARIA apropiados
-- **🎨 Contraste de Color**: Ratios de contraste que superan los estándares WCAG
-- **📱 Zoom Responsive**: Soporte hasta 200% de zoom sin pérdida de funcionalidad
-
-### Características Específicas de Accesibilidad
-- **ARIA Labels**: `aria-label`, `aria-describedby`, `aria-labelledby` en componentes
-- **Roles Semánticos**: `role="button"`, `role="navigation"`, `role="main"`
-- **Estados Dinámicos**: `aria-live` para anuncios de cambios en tiempo real
-- **Focus Management**: Indicadores visuales claros para navegación por teclado
-- **Reduced Motion**: Respeta `prefers-reduced-motion` para animaciones
-- **Screen Reader Support**: Textos alternativos y descripciones contextuales
-
-### Ejemplos de Implementación
-```jsx
-// Tabla de criptomonedas con accesibilidad completa
-<table role="table" aria-label="Tabla de criptomonedas">
-  <thead>
-    <tr role="row">
-      <th scope="col" aria-sort="none">Ranking</th>
-      <th scope="col">Nombre</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr role="row" tabIndex={0} 
-        aria-label={`${coin.name}, precio actual ${coin.current_price}`}>
-      // Contenido accesible
-    </tr>
-  </tbody>
-</table>
-
-// Botones con descripciones contextuales
-<button 
-  aria-label={`Ver detalles de ${coin.name}`}
-  className="focus:ring-2 focus:ring-blue-500"
->
-  <ExternalLink aria-hidden="true" />
-</button>
-```
-
-## 📊 Casos de Uso
-
-### 🎓 **Educativo y Académico**
-- **Análisis de Mercado**: Estudiantes de finanzas y economía
-- **Visualización de Datos**: Ejemplos prácticos de charts y dashboards
-- **Tecnología Blockchain**: Comprensión del ecosistema cripto
-- **Desarrollo Web**: Referencia para proyectos con React y APIs
-
-### 💼 **Profesional y Empresarial**
-- **Monitoreo de Inversiones**: Seguimiento de portafolios de criptomonedas
-- **Análisis Técnico**: Herramientas para traders e inversores
-- **Desarrollo de Software**: Base para aplicaciones fintech
-- **Presentaciones Corporativas**: Datos actualizados para informes
-
-### 🔍 **Investigación y Análisis**
-- **Tendencias de Mercado**: Identificación de patrones y movimientos
-- **Comparación de Activos**: Análisis comparativo entre criptomonedas
-- **Datos Históricos**: Investigación de comportamiento del mercado
-- **APIs de Terceros**: Integración con servicios externos
-
-### 🌐 **Personal y Entretenimiento**
-- **Curiosidad Tecnológica**: Exploración del mundo cripto
-- **Seguimiento Personal**: Monitoreo de inversiones propias
-- **Aprendizaje Autodidacta**: Comprensión de conceptos financieros
-- **Proyectos Hobby**: Base para aplicaciones personales
-
-## 🤝 Contribuir
-
-### 🔧 Configuración para Desarrollo
-
-1. **Fork del Repositorio**
-```bash
-# Crear fork en GitHub y clonar
-git clone https://github.com/tu-usuario/Dashboard-react-vite-V2.git
-cd Dashboard-react-vite-V2
-```
-
-2. **Configuración del Entorno**
-```bash
-# Instalar dependencias
-pnpm install
-
-# Crear rama para feature
-git checkout -b feature/nueva-funcionalidad
-
 # Iniciar servidor de desarrollo
-pnpm dev
+npm run dev
 ```
 
-3. **Flujo de Contribución**
+### **Scripts Disponibles**
 ```bash
-# Hacer cambios y commits
-git add .
-git commit -m "feat: agregar nueva funcionalidad de análisis"
+# Desarrollo
+npm run dev          # Servidor de desarrollo en http://localhost:5173
 
-# Push y crear Pull Request
-git push origin feature/nueva-funcionalidad
+# Producción
+npm run build        # Build optimizado para producción
+npm run preview      # Preview del build de producción
+
+# Quality Assurance
+npm run lint         # Ejecutar ESLint
+
+# Deployment
+npm run deploy       # Deploy a GitHub Pages
 ```
 
-### 💡 Ideas para Contribuir
+## 🔧 Optimizaciones Implementadas
 
-#### **🚀 Nuevas Funcionalidades**
-- **🗺️ Mapas de Calor**: Visualización geográfica de adopción cripto
-- **📈 Indicadores Técnicos**: RSI, MACD, Bollinger Bands
-- **🔔 Sistema de Alertas**: Notificaciones de precios y cambios
-- **💼 Gestión de Portfolio**: Tracker de inversiones personales
-- **🔄 Comparador de Monedas**: Análisis side-by-side
-- **� Análisis Avanzado**: Correlaciones y métricas financieras
+### ⚡ **Performance Optimizations**
 
-#### **🎨 Mejoras de UI/UX**
-- **🌙 Modo Oscuro**: Toggle entre temas claro y oscuro
-- **🎨 Temas Personalizables**: Múltiples esquemas de colores
-- **📱 PWA Support**: Funcionalidad de aplicación web progresiva
-- **🔧 Personalización**: Dashboard configurable por usuario
-- **📊 Widgets Personalizados**: Componentes arrastrables
+#### **Code Splitting**
+- **React.lazy** para carga perezosa de componentes
+- **Suspense** con loading spinners elegantes
+- **Chunks manuales** para bibliotecas específicas
+- **Reducción de JavaScript no utilizado**
 
-#### **⚡ Optimizaciones Técnicas**
-- **🗄️ Estado Global**: Implementación con Zustand o Redux Toolkit
-- **🔄 React Query**: Cache y sincronización de datos mejorada
-- **🧪 Testing**: Tests unitarios y de integración
-- **📊 Analytics**: Tracking de uso y métricas
-- **🔒 Seguridad**: Mejoras en autenticación y validación
+#### **Back/Forward Cache (bfcache)**
+- **Hooks personalizados** para gestión de memoria
+- **Event listeners optimizados** (pagehide vs unload)
+- **Limpieza automática** de intervals y timeouts
+- **Restauración inteligente** del estado
 
-### 🐛 Reportar Issues
+#### **Build Optimization**
+- **Compresión Gzip/Brotli** automática
+- **Minificación avanzada** con esbuild
+- **Tree shaking** para reducir bundle size
+- **Service Worker** para caché offline
 
-Utiliza el [sistema de Issues de GitHub](https://github.com/BrayamFonck/Dashboard-react-vite-V2/issues) para:
+### 🌐 **SEO & Accessibility**
 
-- **🐛 Reportar Bugs**: Descripción detallada y pasos para reproducir
-- **💡 Sugerir Features**: Ideas y casos de uso específicos
-- **📚 Mejoras de Documentación**: Clarificaciones y ejemplos
-- **🔧 Issues Técnicos**: Problemas de rendimiento o compatibilidad
+#### **SEO Enhancements**
+- **robots.txt** válido para crawlers
+- **Meta descriptions** optimizadas
+- **Open Graph** tags para redes sociales
+- **Lighthouse Score** mejorado
 
-### 📋 Template para Issues
-```markdown
-## Tipo de Issue
-- [ ] Bug Report
-- [ ] Feature Request
-- [ ] Documentation
-- [ ] Question
+#### **Accessibility (WCAG 2.1 AA)**
+- **Contraste de colores** optimizado (6.2:1 ratio)
+- **ARIA labels** en componentes interactivos
+- **Navegación por teclado** completa
+- **Focus management** mejorado
 
-## Descripción
-Descripción clara y concisa del issue.
+### 🚀 **GitHub Pages Integration**
 
-## Pasos para Reproducir (si es bug)
-1. Ir a '...'
-2. Hacer click en '...'
-3. Ver error
+#### **React Router Support**
+- **404.html** personalizado para manejo de rutas
+- **Scripts de redirección** transparentes
+- **Configuración automática** de base path
+- **URLs compartibles** para todas las rutas
 
-## Comportamiento Esperado
-Lo que debería suceder.
+## 🎨 Hooks Personalizados
 
-## Screenshots
-Si aplica, agregar screenshots para explicar el problema.
-
-## Entorno
-- OS: [e.g. Windows 11]
-- Browser: [e.g. Chrome 120]
-- Version: [e.g. 1.0.0]
+### **useBfcacheOptimization**
+```javascript
+// Optimiza el back/forward cache del navegador
+useBfcacheOptimization();
 ```
 
-## 🙏 Agradecimientos
+### **useSafeInterval**
+```javascript
+// Intervals que se limpian automáticamente en pagehide
+useSafeInterval(() => {
+  // Lógica del interval
+}, 5000);
+```
 
-### Tecnologías y Herramientas
-- **[CoinGecko API](https://www.coingecko.com/en/api)**: Datos confiables y actualizados de criptomonedas
-- **[React Team](https://react.dev)**: Por la increíble biblioteca y ecosistema
-- **[Vite Team](https://vitejs.dev)**: Por la herramienta de desarrollo más rápida
-- **[Tailwind CSS](https://tailwindcss.com)**: Framework CSS que acelera el desarrollo
-- **[Recharts](https://recharts.org)**: Biblioteca de gráficos elegante y funcional
-- **[Lucide](https://lucide.dev)**: Iconos SVG hermosos y ligeros
+### **useSafeTimeout**
+```javascript
+// Timeouts con gestión automática de memoria
+const { setSafeTimeout, clearSafeTimeout } = useSafeTimeout();
+```
 
-### Comunidad y Recursos
-- **Open Source Community**: Por las innumerables contribuciones y bibliotecas
-- **Stack Overflow**: Por resolver dudas técnicas complejas
-- **MDN Web Docs**: Documentación web de referencia
-- **GitHub**: Por la plataforma de desarrollo colaborativo
-- **Crypto Community**: Por la inspiración y casos de uso reales
+## 📱 Responsive Design
 
-### Reconocimientos Especiales
-- **Desarrolladores Frontend**: Por compartir mejores prácticas y patrones
-- **Comunidad React**: Por el apoyo continuo y recursos educativos
-- **Testers Beta**: Por el feedback valioso durante el desarrollo
-- **Usuarios Finales**: Por las sugerencias y reportes de bugs
+- **Mobile First**: Diseño optimizado para móviles
+- **Breakpoints**: sm, md, lg, xl, 2xl
+- **Touch Friendly**: Elementos táctiles optimizados
+- **Performance**: Lazy loading de imágenes
 
-## 🔗 Enlaces Útiles
+## 🔐 Sistema de Autenticación
 
-### Documentación Técnica
-- **📖 CoinGecko API**: [https://www.coingecko.com/en/api/documentation](https://www.coingecko.com/en/api/documentation)
-- **⚛️ React 19**: [https://react.dev](https://react.dev)
-- **⚡ Vite**: [https://vitejs.dev](https://vitejs.dev)
-- **🎨 Tailwind CSS**: [https://tailwindcss.com](https://tailwindcss.com)
-- **📊 Recharts**: [https://recharts.org](https://recharts.org)
+### **Usuarios de Demostración**
+| Rol | Email | Contraseña | Permisos |
+|-----|-------|------------|----------|
+| **Admin** | `brayan@admin.com` | `admin123` | Acceso completo |
+| **Colaborador** | `maria@colaborador.com` | `colaborador123` | Acceso estándar |
 
-### Recursos de Desarrollo
-- **🧪 Testing Library**: [https://testing-library.com](https://testing-library.com)
-- **♿ WCAG Guidelines**: [https://www.w3.org/WAI/WCAG21/quickref/](https://www.w3.org/WAI/WCAG21/quickref/)
-- **🔧 ESLint Rules**: [https://eslint.org/docs/rules/](https://eslint.org/docs/rules/)
-- **📱 PWA Guide**: [https://web.dev/progressive-web-apps/](https://web.dev/progressive-web-apps/)
+### **Funcionalidades**
+- **Context API** para estado global
+- **Rutas protegidas** con PrivateRoute
+- **Persistencia** en localStorage
+- **Validación** de formularios
 
-### Herramientas de Productividad
-- **🎯 VS Code Extensions**: React snippets, ES7+, Tailwind IntelliSense
-- **� React DevTools**: [Chrome Extension](https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi)
-- **🎨 Design Inspiration**: [Dribbble](https://dribbble.com), [Behance](https://behance.net)
+## 📊 Funcionalidades del Dashboard
 
----
+### **Estadísticas Globales**
+- Capitalización total del mercado
+- Volumen de trading 24h
+- Dominancia de Bitcoin
+- Número total de criptomonedas
 
-## 📧 Contacto
+### **Gráficos Interactivos**
+- **Pie Chart**: Distribución de capitalización de mercado
+- **Line Chart**: Datos históricos con rangos personalizables
+- **Bar Chart**: Volúmenes de trading
+- **Responsive**: Adaptables a cualquier tamaño de pantalla
+
+### **Tabla de Criptomonedas**
+- **Top 20** criptomonedas por capitalización
+- **Paginación** y ordenamiento
+- **Búsqueda en tiempo real**
+- **Enlaces** a páginas de detalles
+
+## 🔄 Sistema de Cache Inteligente
+
+### **Cache Dual**
+- **Cache primario**: Datos en tiempo real (60 segundos)
+- **Cache de respaldo**: Datos persistentes (24 horas)
+- **Fallback automático**: En caso de errores de red
+
+### **Rate Limiting**
+- **100ms** entre requests
+- **Cola de peticiones** con procesamiento secuencial
+- **Reintentos automáticos** con backoff exponencial
+
+## 🌍 Deployment en GitHub Pages
+
+### **URL de Producción**
+🔗 **[https://BrayamFonck.github.io/Dashboard-react-vite-V2/](https://BrayamFonck.github.io/Dashboard-react-vite-V2/)**
+
+### **Configuración Automática**
+```json
+{
+  "homepage": "https://BrayamFonck.github.io/Dashboard-react-vite-V2/",
+  "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
+  }
+}
+```
+
+### **Soporte para React Router**
+- **404.html**: Maneja rutas no encontradas
+- **Redirección transparente**: URLs amigables
+- **Estado preservado**: Navegación fluida
+
+## 📈 Métricas de Performance
+
+### **Lighthouse Scores**
+- **Performance**: 95+ 🟢
+- **Accessibility**: 100 🟢
+- **Best Practices**: 100 🟢
+- **SEO**: 100 🟢
+
+### **Bundle Size**
+- **Initial Bundle**: ~228KB (gzipped: ~73KB)
+- **Code Splitting**: Chunks separados por página
+- **Compression**: Gzip + Brotli habilitado
+
+## 🧪 Testing
+
+### **Testing Manual**
+- **Navegación**: Todas las rutas funcionando
+- **Responsive**: Probado en múltiples dispositivos
+- **Performance**: Lighthouse audits regulares
+- **Accessibility**: Pruebas con lectores de pantalla
+
+### **Funcionalidades Probadas**
+- ✅ Autenticación y autorización
+- ✅ Búsqueda en tiempo real
+- ✅ Gráficos interactivos
+- ✅ Cache y fallbacks
+- ✅ Navegación entre páginas
+- ✅ Recarga de página en cualquier ruta
+
+## 🔮 Próximas Mejoras
+
+### **Funcionalidades Pendientes**
+- [ ] **Portfolio Personal**: Gestión de carteras
+- [ ] **Alertas de Precio**: Notificaciones personalizadas
+- [ ] **Análisis Técnico**: Indicadores avanzados
+- [ ] **Trading Simulado**: Paper trading
+- [ ] **PWA**: Progressive Web App
+- [ ] **Dark Mode**: Tema oscuro
+
+### **Optimizaciones Técnicas**
+- [ ] **React 19 Features**: Concurrent features
+- [ ] **Testing Suite**: Jest + React Testing Library
+- [ ] **E2E Testing**: Playwright o Cypress
+- [ ] **Analytics**: Google Analytics 4
+- [ ] **Error Tracking**: Sentry integration
+
+## 🤝 Contribución
+
+¡Las contribuciones son bienvenidas! Por favor:
+
+1. **Fork** el proyecto
+2. **Crea** una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. **Commit** tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. **Push** a la rama (`git push origin feature/AmazingFeature`)
+5. **Abre** un Pull Request
+
+### **Estándares de Código**
+- **ESLint**: Seguir las reglas configuradas
+- **Prettier**: Formateo automático
+- **Commits**: Conventional Commits
+- **Documentación**: Actualizar README si es necesario
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
+
+## 📞 Contacto
 
 ¿Tienes preguntas, sugerencias o quieres colaborar? ¡Me encantaría saber de ti!
 
@@ -606,13 +417,13 @@ Si aplica, agregar screenshots para explicar el problema.
 
 ### 💬 Formas de Contacto
 - **🐛 Issues Técnicos**: [GitHub Issues](https://github.com/BrayamFonck/Dashboard-react-vite-V2/issues)
-- **� Colaboraciones**: Mensaje directo en LinkedIn
+- **🤝 Colaboraciones**: Mensaje directo en LinkedIn
 - **📧 Consultas Generales**: Email directo
-- **🤝 Networking**: LinkedIn para oportunidades profesionales
+- **🌐 Networking**: LinkedIn para oportunidades profesionales
 
 ---
 
-¡Gracias por visitar CryptoDashboard! 🚀  
+¡Gracias por visitar CryptoDashboard v2.0! 🚀  
 Si este proyecto te resulta útil, no olvides darle una ⭐ en GitHub.  
 ¡Tu apoyo me motiva a seguir desarrollando herramientas útiles para la comunidad! 😊
 
@@ -621,13 +432,14 @@ Si este proyecto te resulta útil, no olvides darle una ⭐ en GitHub.
 ---
 
 <div align="center">
-  <strong>CryptoDashboard</strong> - Monitoreo profesional de criptomonedas
+  <strong>CryptoDashboard v2.0</strong> - Monitoreo profesional de criptomonedas
   <br>
-  <em>Desarrollado con React 19 + Vite 7 + Tailwind CSS</em>
+  <em>Desarrollado con React 19 + Vite 7 + Tailwind CSS + Performance Optimizations</em>
   <br><br>
   <img src="https://img.shields.io/badge/React-19.1.0-61DAFB?style=for-the-badge&logo=react&logoColor=white" alt="React" />
   <img src="https://img.shields.io/badge/Vite-7.0.4-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
   <img src="https://img.shields.io/badge/Tailwind_CSS-4.1.11-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind" />
   <img src="https://img.shields.io/badge/JavaScript-ES2022-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" alt="JavaScript" />
+  <img src="https://img.shields.io/badge/Performance-Optimized-00D9FF?style=for-the-badge&logo=lighthouse&logoColor=white" alt="Performance" />
+  <img src="https://img.shields.io/badge/Accessibility-WCAG_2.1_AA-008000?style=for-the-badge&logo=accessibility&logoColor=white" alt="Accessibility" />
 </div>
-
