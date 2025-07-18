@@ -2,15 +2,27 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/Dashboard-react-vite-V2/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard de Criptos Brayan</title>
     <meta 
       name="description" 
       content="Un dashboard interactivo para seguir en tiempo real el precio y las tendencias de las principales criptomonedas como Bitcoin, Ethereum y más." 
     />
-    <script type="module" crossorigin src="/assets/index-CV8h1QbZ.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-C04qOdNf.css">
+
+    <!-- Script para restaurar rutas desde redirección del 404 -->
+    <script type="text/javascript">
+      // Lee la ruta de la redirección del 404 y la restaura
+      const params = new URLSearchParams(window.location.search);
+      const path = params.get('p');
+      if (path) {
+        window.history.replaceState(null, null, window.location.pathname.slice(0, -1) + path.replace(/~and~/g, '&'));
+      }
+    </script>
+    <!-- Fin del script de restauración -->
+
+    <script type="module" crossorigin src="/Dashboard-react-vite-V2/assets/index-B5nbigFH.js"></script>
+    <link rel="stylesheet" crossorigin href="/Dashboard-react-vite-V2/assets/index-BTtG3dap.css">
   </head>
   <body>
     <div id="root"></div>

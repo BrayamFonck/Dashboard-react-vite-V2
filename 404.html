@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard de Criptos Brayan</title>
+    <meta 
+      name="description" 
+      content="Un dashboard interactivo para seguir en tiempo real el precio y las tendencias de las principales criptomonedas como Bitcoin, Ethereum y más." 
+    />
+
+    <!-- Script para redirigir rutas 404 a index.html para React Router -->
+    <script type="text/javascript">
+      // Redirige las rutas 404 a index.html para que React Router las maneje
+      const path = window.location.pathname;
+      const repoName = '/Dashboard-react-vite-V2/';
+      if (path.startsWith(repoName)) {
+        const redirect = window.location.href.replace(path, repoName + '?p=' + path.slice(repoName.length).replace(/&/g, '~and~'));
+        window.location.href = redirect;
+      }
+    </script>
+    <!-- Fin del script de redirección -->
+
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
